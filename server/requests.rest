@@ -1,0 +1,25 @@
+
+
+POST http://localhost:3000/create-blog
+Content-Type: application/json
+Authorization: Bearer ***REMOVED***
+
+{
+  "title": "hello",
+  "banner":"smaple.img",
+  "des": " this is a short desc",
+  "content":{
+    "blocks":[1,2,3]
+  },
+  "tags":["tag","tags2"]
+}
+
+
+# POST http://localhost:3000/signin 
+# Content-Type: application/json
+
+# {
+#   "fullname": "John Doe",
+#   "email": "johndoe@example.com",
+#   "password": "Password123"
+# }
