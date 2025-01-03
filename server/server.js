@@ -22,6 +22,7 @@ import Blog from "./Schema/Blog.js";
 // Regex patterns for validation
 const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+const maxLimit =10;
 
 // Initialize Express
 const server = express();
@@ -314,7 +315,24 @@ server.post("/create-blog", verifyJWT, (req, res) => {
       return res.status(500).json({ error: err.masssage });
     });
 });
-
+server.get('/latest-blogs',(req,res)=>{
+  Blog.find({draft:false})
+  .populate('author',"personal_info.profile_img personal_info.username personal_info.fullname -_id")
+  .sort({"publishedAt":-1})//tell give me the latest
+  .select("blog_id title des banner activity tags publishedAt -_id")
+  .limit(maxLimit)
+  .then(blogs=>{
+    
+      return res.status(200).json({blogs:blogs});
+    
+  })
+  .catch(err =>{
+    return res.status(500).json({
+      error:
+        err.message,
+    });
+  })
+})
 // Google login credential authentication
 server.post("/google-auth", async (req, res) => {
   try {
