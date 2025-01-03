@@ -14,21 +14,10 @@ const getImgURL = async (img) => {
       if (uploadResponse.ok) {
         const { id } = await uploadResponse.json();
         console.log('Image uploaded successfully. ID:', id);
-  
+        const imageUrl= `http://localhost:3000/image/${id}`;
+        return imageUrl;
         // Retrieve the image from the backend using the returned ID
-        const retrieveResponse = await fetch(`http://localhost:3000/image/${id}`);
-  
-        if (retrieveResponse.ok) {
-          // Convert the binary data to a Blob
-          const imageBlob = await retrieveResponse.blob();
-  
-          // Create a URL for the image blob and return it
-          const imageUrl = URL.createObjectURL(imageBlob);
-          console.log('Image retrieved successfully.');
-          return imageUrl; // Return the image URL
-        } else {
-          console.error('Failed to retrieve image:', retrieveResponse.statusText);
-        }
+        // const retrieveResponse = await fetch(`http://localhost:3000/image/${id}`);
       } else {
         console.error('Failed to upload image:', uploadResponse.statusText);
       }
