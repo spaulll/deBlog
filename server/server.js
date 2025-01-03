@@ -245,26 +245,34 @@ server.post("/create-blog", verifyJWT, (req, res) => {
       .status(403)
       .json({ error: "You must provide a title to publish the blog" });
   }
-  if (!des.length || des.length > 200) {
-    return res
-      .status(403)
-      .json({ error: "You must provide a desciption under 200 character." });
-  }
-  if (!banner.length) {
-    return res
-      .status(403)
-      .json({ error: "You must provide a banner to publish" });
-  }
-  if (!content.blocks?.length) {
-    return res.status(403).json({ error: "There must be some blog content" });
-  }
-  if (!tags.length || tags.length > 16) {
-    return res
-      .status(403)
-      .json({ error: "You must provide a tags under limit" });
+  if (!draft) {
+    if (!title.length) {
+      return res
+        .status(403)
+        .json({ error: "You must provide a title to publish the blog" });
+    }
+    if (!des.length || des.length > 200) {
+      return res
+        .status(403)
+        .json({ error: "You must provide a desciption under 200 character." });
+    }
+    if (!banner.length) {
+      return res
+        .status(403)
+        .json({ error: "You must provide a banner to publish" });
+    }
+    if (!content.blocks?.length) {
+      return res.status(403).json({ error: "There must be some blog content" });
+    }
+    if (!tags.length || tags.length > 16) {
+      return res
+        .status(403)
+        .json({ error: "You must provide a tags under limit" });
+    }
+
+    tags = tags.map((tag) => tag.toLowerCase());
   }
 
-  tags = tags.map((tag) => tag.toLowerCase());
   let blog_id =
     title
       .replace(/[^a-zA-Z0-9]/g, " ")
