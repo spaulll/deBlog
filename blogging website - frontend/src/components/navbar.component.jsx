@@ -1,5 +1,5 @@
 // Navbar.jsx
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import logo from "../imgs/dblog.webp";
 import { Search, PenLine, Bell } from "lucide-react";
 import { useContext, useState } from "react";
@@ -9,7 +9,15 @@ import UserNavigationPanel from "./user-navigation.component";
 const Navbar = () => {
   const [searchboxvisibility, setSearchboxvisibility] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
+  let navigate = useNavigate();
 
+  const handelSearch = (e) =>{
+    let query = e.target.value;
+    if(e.keyCode == 13 && query.length){
+      navigate(`/search/${query}`);
+
+    }
+  }
   const handeluserNavPanel = () => {
     setUserNavPanel((currentvalue) => !currentvalue);
   };
@@ -23,7 +31,7 @@ const Navbar = () => {
     <>
       <nav className="navbar">
         <Link to="/" className="flex-none w-11 md:w-16">
-          <img src={logo} className="w-full" alt="Logo" />
+          <img src={logo} className="w-full rounded-2xl" alt="Logo" />
         </Link>
         <div
           className={
@@ -36,6 +44,7 @@ const Navbar = () => {
               type="text"
               placeholder="Search"
               className="w-full md:w-auto bg-grey p-4 pl-6 pr-[12%] md:pr-6 rounded-full placeholder:text-dark-grey md:pl-12"
+              onKeyDown={handelSearch}
             />
             <Search className="absolute right-[10%] md:pointer-events-none md:left-5 top-1/2 -translate-y-1/2 text-2xl text-dark-grey" />
           </div>
