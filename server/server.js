@@ -312,6 +312,20 @@ server.post("/search-blogs-count", (req, res) => {
       });
     });
 });
+server.post("/get-user-profile", (req, res) => {
+  let { username } = req.body;
+  User.findOne({"personal_info.username": username})
+  .select("-personal_info.password -google_auth -updateAt -blogs")
+
+    .then(user => {
+      return res.status(200).json({ user});
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        error: err.message,
+      });
+    });
+});
 //store and validate the publish blog part
 server.post("/create-blog", verifyJWT, (req, res) => {
   let authorId = req.user;
