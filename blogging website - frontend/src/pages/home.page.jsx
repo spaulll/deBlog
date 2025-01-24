@@ -26,7 +26,6 @@ const HomePage = () => {
     "open road",
     "flower",
     "natural ornament",
-    "natural ornament",
   ];
   const fetchLatestBlogs = ({page = 1}) => {
     axios
