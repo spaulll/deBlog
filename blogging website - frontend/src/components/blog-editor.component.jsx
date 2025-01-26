@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../imgs/dblog.webp";
-import Animationrapper from "../common/page-animation";
+import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
 import getImgURL from "../common/aws";
 import { useContext, useEffect, useState } from "react";
@@ -163,7 +163,7 @@ const BlogEditor = () => {
         </div>
       </nav>
       <Toaster />
-      <Animationrapper>
+      <AnimationWrapper>
         <section>
           <div className="mx-auto max-w-[900px] w-full">
             <div className="relative aspect-video bg-white border-2 border-grey hover: opacity-80 ">
@@ -196,7 +196,7 @@ const BlogEditor = () => {
             <div id="textEditorForm" className="font-gelasio"></div>
           </div>
         </section>
-      </Animationrapper>
+      </AnimationWrapper>
     </>
   );
 };

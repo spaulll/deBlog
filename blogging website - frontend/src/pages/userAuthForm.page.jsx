@@ -2,7 +2,7 @@ import InputBox from "../components/input.component";
 import { User, Mail, KeyRound } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import GoogleIcon from "../imgs/google.png";
-import Animationrapper from "../common/page-animation";
+import AnimationWrapper from "../common/page-animation";
 import { useContext } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
@@ -87,7 +87,7 @@ const UserAuthForm = ({ type }) => {
   return access_token ? (
     <Navigate to="/" />
   ) : (
-    <Animationrapper keyvalue={type}>
+    <AnimationWrapper keyvalue={type}>
       <section className="h-cover flex items-center justify-center">
         <Toaster />
         <form onSubmit={handleSubmit} className="w-[80%] max-w-[400px]">
@@ -150,7 +150,7 @@ const UserAuthForm = ({ type }) => {
           )}
         </form>
       </section>
-    </Animationrapper>
+    </AnimationWrapper>
   );
 };
 

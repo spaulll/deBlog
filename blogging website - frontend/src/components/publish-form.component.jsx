@@ -1,4 +1,4 @@
-import Animationrapper from "../common/page-animation";
+import AnimationWrapper from "../common/page-animation";
 import { toast, Toaster } from "react-hot-toast";
 import { X } from "lucide-react";
 import { useContext } from "react";
@@ -105,7 +105,7 @@ const PublishEditor = () => {
   };
   return (
     <>
-      <Animationrapper>
+      <AnimationWrapper>
         <section className="w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4">
           <Toaster />
           <button
@@ -172,7 +172,7 @@ const PublishEditor = () => {
             </button>
           </div>
         </section>
-      </Animationrapper>
+      </AnimationWrapper>
     </>
   );
 };

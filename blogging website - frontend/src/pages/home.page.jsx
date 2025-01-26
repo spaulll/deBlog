@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Animationrapper from "../common/page-animation";
+import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
 import axios from "axios";
 import Loader from "../components/loader.component";
@@ -98,7 +98,7 @@ const HomePage = () => {
     }
   }, [pageState]);
   return (
-    <Animationrapper>
+    <AnimationWrapper>
       <section className="h-hover flex justify-center gap-10">
         <div className=" w-full">
           <InPageNavigation
@@ -113,7 +113,7 @@ const HomePage = () => {
               ) : (
                 blogData.results.map((blog, i) => {
                   return (
-                    <Animationrapper
+                    <AnimationWrapper
                       transition={{ duration: 1, delay: i * 0.1 }}
                       key={i}
                     >
@@ -121,7 +121,7 @@ const HomePage = () => {
                         content={blog}
                         author={blog.author.personal_info}
                       />
-                    </Animationrapper>
+                    </AnimationWrapper>
                   );
                 })
               )}
@@ -134,12 +134,12 @@ const HomePage = () => {
             ) : (
               trendingBlogs.map((trendingBlog, i) => {
                 return (
-                  <Animationrapper
+                  <AnimationWrapper
                     transition={{ duration: 1, delay: i * 0.1 }}
                     key={i}
                   >
                     <MinimalBlogPost blog={trendingBlog} index={i} />
-                  </Animationrapper>
+                  </AnimationWrapper>
                 );
               })
             )}
@@ -196,12 +196,12 @@ const HomePage = () => {
               ) : (
                 trendingBlogs.map((trendingBlog, i) => {
                   return (
-                    <Animationrapper
+                    <AnimationWrapper
                       transition={{ duration: 1, delay: i * 0.1 }}
                       key={i}
                     >
                       <MinimalBlogPost blog={trendingBlog} index={i} />
-                    </Animationrapper>
+                    </AnimationWrapper>
                   );
                 })
               )}
@@ -209,7 +209,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-    </Animationrapper>
+    </AnimationWrapper>
   );
 };
 

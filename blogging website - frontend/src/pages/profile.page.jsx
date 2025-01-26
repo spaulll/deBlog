@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import Animationrapper from "../common/page-animation";
+import AnimationWrapper from "../common/page-animation";
 import { Loader } from "lucide-react";
 import { UserContext } from "../App";
 import AboutUser from "../components/about.component";
@@ -121,7 +121,7 @@ const ProfilePage = () => {
     setProfileLoaded("");
   };
   return (
-    <Animationrapper>
+    <AnimationWrapper>
       {loading ? (
         <Loader />
       ) : (
@@ -171,7 +171,7 @@ const ProfilePage = () => {
                 ) : (
                   blogs.results.map((blog, i) => {
                     return (
-                      <Animationrapper
+                      <AnimationWrapper
                         transition={{ duration: 1, delay: i * 0.1 }}
                         key={i}
                       >
@@ -179,7 +179,7 @@ const ProfilePage = () => {
                           content={blog}
                           author={blog.author.personal_info}
                         />
-                      </Animationrapper>
+                      </AnimationWrapper>
                     );
                   })
                 )}
@@ -196,7 +196,7 @@ const ProfilePage = () => {
         :
         <PageNotFound/>
       )}
-    </Animationrapper>
+    </AnimationWrapper>
   );
 };
 

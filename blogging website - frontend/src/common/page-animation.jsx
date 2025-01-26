@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 
-const Animationrapper = ({
+const AnimationWrapper = ({
   children,
   initial = { opacity: 0 },
   animate = { opacity: 1 },
@@ -22,4 +22,4 @@ const Animationrapper = ({
     </AnimatePresence>
   );
 };
-export default Animationrapper;
+export default AnimationWrapper;

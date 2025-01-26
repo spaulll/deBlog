@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import InPageNavigation from "../components/inpage-navigation.component";
 import { useEffect, useState } from "react";
 import Loader from "../components/loader.component";
-import Animationrapper from "../common/page-animation";
+import AnimationWrapper from "../common/page-animation";
 import BlogPostCard from "../components/blog-post.component";
 import NoDataMessage from "../components/nodata.component";
 import LoadMoreDataBtn from "../components/load-more.component";
@@ -70,12 +70,12 @@ const SearchPage = () => {
         ) : users.length ? (
           users.map((user, i) => {
             return (
-              <Animationrapper
+              <AnimationWrapper
                 key={i}
                 transation={{ duration: 1, delay: i * 0.08 }}
               >
                 <UserCard user={user} />
-              </Animationrapper>
+              </AnimationWrapper>
             );
           })
         ) : (
@@ -99,7 +99,7 @@ const SearchPage = () => {
             ) : (
               blogData.results.map((blog, i) => {
                 return (
-                  <Animationrapper
+                  <AnimationWrapper
                     transition={{ duration: 1, delay: i * 0.1 }}
                     key={i}
                   >
@@ -107,7 +107,7 @@ const SearchPage = () => {
                       content={blog}
                       author={blog.author.personal_info}
                     />
-                  </Animationrapper>
+                  </AnimationWrapper>
                 );
               })
             )}
