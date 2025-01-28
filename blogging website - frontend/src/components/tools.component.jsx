@@ -26,12 +26,15 @@ const uploadImageByURL = (e) => {
 
 export const tools = {
   embed: Embed,
-  list: { class: List, inlineToolbar: true },
+  list: { 
+    class: List, 
+    inlineToolbar: true 
+  },
   image: {
     class: Image,
     config: {
       endpoints: {
-        byFile: "http://localhost:3000/upload-img-return-URL",
+        byFile: `${import.meta.env.VITE_SERVER_URL}/upload-img-return-URL`,
       },
       uploader: {
         uploadByUrl: uploadImageByURL,
@@ -40,13 +43,12 @@ export const tools = {
             const formData = new FormData();
             formData.append("image", file);
 
-            fetch("http://localhost:3000/upload-img-return-URL", {
+            fetch(`${import.meta.env.VITE_SERVER_URL}/upload-img-return-URL`, {
               method: "POST",
               body: formData,
             })
               .then((response) => response.json())
               .then((result) => {
-                // Check if result has the expected structure
                 if (result.success && result.file && result.file.url) {
                   resolve({
                     success: 1,
@@ -60,7 +62,7 @@ export const tools = {
                 }
               })
               .catch((error) => {
-                // console.error("Upload error:", error);
+                console.error("Upload error:", error);
                 reject({
                   success: 0,
                   message: "File upload failed!",
@@ -71,7 +73,6 @@ export const tools = {
       },
     },
   },
-
   header: {
     class: Header,
     config: {
@@ -80,7 +81,10 @@ export const tools = {
       defaultLevel: 2,
     },
   },
-  quote: { class: Quote, inlineToolsbar: true },
+  quote: { 
+    class: Quote, 
+    inlineToolbar: true 
+  },
   marker: Marker,
   inlineCode: InlineCode,
 };

@@ -42,7 +42,7 @@ const BlogEditor = () => {
   const handelBannerUpload = async (e) => {
     try {
       let loadingToast = toast.loading("Uploading..");
-      console.log(e);
+      // console.log(e);
       let img = e.target.files[0];
       // console.log(img);
 
