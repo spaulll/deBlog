@@ -1,25 +1,28 @@
-import sqlite3 from 'sqlite3';
+import mongoose, { Schema } from "mongoose";
 
-const imgdb = new sqlite3.Database('./image_database.db', (err) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-  } else {
-    console.log('Connected to the SQLite database.');
+const imageSchema = new Schema(
+  {
+    image_id: {
+      type: String,
+      required: true,
+      unique: true, // Ensures `image_id` is unique
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    value: {
+      type: Buffer, // Stores the image as binary data
+      required: true,
+    },
+    contentType: {
+      type: String, // Stores the MIME type of the image (e.g., "image/png", "image/jpeg")
+      required: true,
+    },
+  },
+  {
+    timestamps: true
   }
-});
+);
 
-const createTableQuery = `CREATE TABLE IF NOT EXISTS images (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  filename TEXT NOT NULL,
-  data BLOB NOT NULL
-)`;
-
-imgdb.run(createTableQuery, (err) => {
-  if (err) {
-    console.error('Error creating table:', err);
-  } else {
-    console.log('Table created or already exists.');
-  }
-});
-
-export default imgdb;
+export default mongoose.model("images", imageSchema);
