@@ -9,13 +9,12 @@ import admin from "firebase-admin";
 import { getAuth } from "firebase-admin/auth";
 import { createRequire } from "module";
 import multer from "multer";
-import db from "./Schema/imgdb.js";
 const require = createRequire(import.meta.url);
 const serviceAccount = require("./react-js-blog-website-c3587-firebase-adminsdk-yrei8-8bdd095672.json");
 
 // Import Schema
 import User from "./Schema/User.js";
-import imgdb from "./Schema/imgdb.js";
+import Image from "./Schema/imgdb.js";
 import { verify } from "crypto";
 import Blog from "./Schema/Blog.js";
 
@@ -126,86 +125,73 @@ server.post("/signup", async (req, res) => {
 });
 
 // Route to upload an image and return the image ID
-server.post("/get-upload-image", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send("No file uploaded.");
-  }
-
-  const { buffer, originalname } = req.file;
-  const insertQuery = `INSERT INTO images (filename, data) VALUES (?, ?)`;
-
-  imgdb.run(insertQuery, [originalname, buffer], function (err) {
-    if (err) {
-      console.error("Error saving image to the database:", err);
-      res.status(500).send("Failed to save image.");
-    } else {
-      res.status(200).json({ id: this.lastID }); // Return the generated ID
-    }
-  });
-});
 
 //upload and return
-server.post("/upload-img-return-URL", upload.single("image"), (req, res) => {
+server.post("/upload-img-return-URL", upload.single("image"), async (req, res) => {
+  try {
   if (!req.file) {
     return res.status(400).json({ success: 0, message: "No file uploaded." });
   }
 
-  const { buffer, originalname } = req.file;
-  const insertQuery = `INSERT INTO images (filename, data) VALUES (?, ?)`;
+    const { buffer, originalname, mimetype } = req.file;
 
-  imgdb.run(insertQuery, [originalname, buffer], function (err) {
-    if (err) {
-      console.error("Error saving image to the database:", err);
-      return res
-        .status(500)
-        .json({ success: 0, message: "Failed to save image." });
+    // Check if the image already exists
+    const existingImage = await Image.findOne({ name: originalname });
+
+    if (existingImage) {
+      // Return the existing image URL if found
+      const imageUrl = `http://localhost:${process.env.PORT || 3000}/image/${existingImage.image_id}`;
+      return res.status(200).json({
+        success: 1,
+        message: "Image already exists.",
+        file: { url: imageUrl },
+      });
     }
 
-    // Return a URL to retrieve the uploaded image by its ID
-    const imageId = this.lastID; // Get the auto-generated ID of the inserted image
-    const imageUrl = `http://localhost:3000/image/${imageId}`;
+    // If the image does not exist, save it to the database
+    const newImage = new Image({
+      image_id: new mongoose.Types.ObjectId().toString(),
+      name: originalname,
+      value: buffer,
+      contentType: mimetype,
+    });
+
+    await newImage.save();
+
+    // Generate a URL to retrieve the uploaded image
+    const imageUrl = `http://localhost:${process.env.PORT || 3000}/image/${newImage.image_id}`;
+
     res.status(200).json({
       success: 1,
+      message: "Image uploaded successfully.",
       file: { url: imageUrl },
     });
-  });
+  } catch (err) {
+    console.error("Error processing image upload:", err);
+    res.status(500).json({ success: 0, message: "Internal Server Error." });
+  }
 });
+
 
 // Route to retrieve an image by ID
 
-server.get("/image/:id", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  const imageId = req.params.id;
-  const selectQuery = `SELECT filename, data FROM images WHERE id = ?`;
+server.get("/image/:id", async (req, res) => {
+  try {
+    const image = await Image.findOne({ image_id: req.params.id });
 
-  imgdb.get(selectQuery, [imageId], (err, row) => {
-    if (err) {
-      console.error("Error retrieving image from database:", err);
-      return res.status(500).send("Failed to retrieve image.");
+    if (!image) {
+      return res.status(404).json({ success: 0, message: "Image not found." });
     }
-    if (!row) {
-      return res.status(404).send("Image not found.");
-    } else {
-      res.set("Content-Type", "image/jpeg"); // Adjust MIME type if needed
-      res.send(row.data);
+
+    res.set("Content-Type", image.contentType);
+    res.send(image.value);
+  } catch (err) {
+    console.error("Error retrieving image:", err);
+    res.status(500).json({ success: 0, message: "Internal Server Error." });
     }
-  });
 });
 
 // Route to list all images
-
-server.get("/images", (req, res) => {
-  const selectQuery = `SELECT id, filename FROM images`;
-
-  db.all(selectQuery, (err, rows) => {
-    if (err) {
-      console.error("Error retrieving images:", err);
-      res.status(500).send("Failed to retrieve images.");
-    } else {
-      res.status(200).json(rows);
-    }
-  });
-});
 
 // Signin Route
 server.post("/signin", async (req, res) => {
