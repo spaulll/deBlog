@@ -6,9 +6,10 @@ import { EditoContext } from "../pages/editor.pages";
 import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const PublishEditor = () => {
+  let {blog_id}=useParams()
   let characterLimit = 200;
   const tagLimit = 16;
   let {
@@ -84,7 +85,7 @@ const PublishEditor = () => {
     };
     console.log(blogObj)
     axios
-      .post(import.meta.env.VITE_SERVER_URL + "/create-blog", blogObj, {
+      .post(import.meta.env.VITE_SERVER_URL + "/create-blog", {...blogObj,id:blog_id}, {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import logo from "../imgs/dblog.webp";
 import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
@@ -12,6 +12,7 @@ import axios from "axios";
 import { UserContext } from "../App";
 const BlogEditor = () => {
   const [imgURL, setImgURL] = useState(null);
+  let{blog_id}=useParams()
   let {
     blog,
     blog: { title, banner, content, tags, des },
@@ -31,8 +32,8 @@ const BlogEditor = () => {
     if (!textEditor.isReady) {
       setTextEditor(
         new EditorJS({
-          holderId: textEditorForm,
-          data: content,
+          holderId: 'textEditorForm',
+          data: Array.isArray(content)?content[0]:content,
           tools: tools,
           placeholder: "Let's write an awesome story",
         })
@@ -49,7 +50,6 @@ const BlogEditor = () => {
       let dataIMG = await getImgURL(img);
       toast.dismiss(loadingToast);
       toast.success("Successfully Uploaded");
-      setImgURL(dataIMG);
       setBlog({ ...blog, banner: dataIMG });
     } catch (err) {
       toast.dismiss(loadingToast);
@@ -123,7 +123,7 @@ const BlogEditor = () => {
         };
         console.log(blogObj);
         axios
-          .post(import.meta.env.VITE_SERVER_URL + "/create-blog", blogObj, {
+          .post(import.meta.env.VITE_SERVER_URL + "/create-blog", {...blogObj,id:blog_id}, {
             headers: {
               Authorization: `Bearer ${access_token}`,
             },
