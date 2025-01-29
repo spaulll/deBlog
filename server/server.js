@@ -544,6 +544,61 @@ server.post("/get-blog", (req, res) => {
     
 
 });
+
+server.post('/like-blog', verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let {_id, isLikedByUser} = req.body;  // Fixed: match the case from frontend
+  let incrementVal = !isLikedByUser ? 1 : -1;
+  
+  Blog.findOneAndUpdate({_id}, {$inc: {"activity.total_likes": incrementVal}})
+    .then(blog => {
+      if(!isLikedByUser){
+        let like = new Notification({
+          type: "like",
+          blog: _id,
+          notification_for: blog.author,
+          user: user_id
+        })
+
+        like.save()
+          .then(notification => {
+            return res.status(200).json({liked_by_user: true})
+          })
+          .catch(err => {
+            return res.status(500).json({error: err.message})
+          })
+      } else {
+        // Handle unlike case
+        return Notification.deleteOne({
+          user: user_id,
+          blog: _id,
+          type: "like"
+        })
+          .then(() => {
+            return res.status(200).json({liked_by_user: false})
+          })
+          .catch(err => {
+            return res.status(500).json({error: err.message})
+          })
+      }
+    })
+    .catch(err => {
+      return res.status(500).json({error: err.message})
+    })
+})
+
+server.post('/isliked-by-user',verifyJWT,(req,res)=>{
+  let user_id = req.user;
+  let {_id}= req.body;
+  Notification.exists({user:user_id, type:"like",blog:_id})
+  .then(results =>{
+    return res.status(200).json({results})
+  })
+  .catch((err)=>{
+    return res.status(500).json({error:err.message})
+  })
+
+})
 // Start server
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

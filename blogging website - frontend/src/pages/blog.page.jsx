@@ -24,6 +24,7 @@ const BlogPage = () => {
   const [blogData, setBlogData] = useState(blogStructure);
   const [loading, setLoading] = useState(true);
   const [similarBlog, setSimilarBlog] = useState(null);
+  const [isLikedByUser,setIsLikedByUser]= useState(false);
 
   let {
     title,
@@ -79,7 +80,7 @@ const resetState=()=>{
       {loading ? (
         <Loader />
       ) : (
-        <BlogContext.Provider value={{ blogData, setBlogData }}>
+        <BlogContext.Provider value={{ blogData, setBlogData, isLikedByUser, setIsLikedByUser }}>
           <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
             <img src={banner} className="aspect-video" />
             <div className="mt-12">
