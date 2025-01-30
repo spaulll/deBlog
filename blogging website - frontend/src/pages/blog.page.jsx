@@ -7,6 +7,7 @@ import { getDay } from "../common/date";
 import BlogInteraction from "../components/blog-interaction.component";
 import BlogPostCard from "../components/blog-post.component";
 import BlogContent from "../components/blog-content.component";
+import CommentsContainer, { fetchComments } from "../components/comments.component";
 
 export const blogStructure = {
   title: "",
@@ -25,6 +26,8 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [similarBlog, setSimilarBlog] = useState(null);
   const [isLikedByUser,setIsLikedByUser]= useState(false);
+  const [commentWrapper,setCommentWrapper]= useState(true);
+  const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(false);
 
   let {
     title,
@@ -41,8 +44,12 @@ const BlogPage = () => {
       .post(import.meta.env.VITE_SERVER_URL + "/get-blog", {
         blog_id,
       })
-      .then(({ data: { blog } }) => {
+      .then(async({ data: { blog } }) => {
+
+        blog.comments = await fetchComments({blog_id:blog._id, setParentCommentCountFun: setTotalParentCommentsLoaded})
         setBlogData(blog);
+        // console.log(blogData)
+        // console.log(blog)
         // Ensure tags exist before searching
         if (blog.tags && blog.tags.length > 0) {
           axios
@@ -74,13 +81,17 @@ const resetState=()=>{
   setBlogData(blogStructure)
   setSimilarBlog(null)
   setLoading(true)
+  setIsLikedByUser(false)
+  // setCommentWrapper(false)
+  setTotalParentCommentsLoaded(false)
 }
   return (
     <AnimationWrapper>
       {loading ? (
         <Loader />
       ) : (
-        <BlogContext.Provider value={{ blogData, setBlogData, isLikedByUser, setIsLikedByUser }}>
+        <BlogContext.Provider value={{ blogData, setBlogData, isLikedByUser, setIsLikedByUser, setCommentWrapper, setTotalParentCommentsLoaded, commentWrapper, totalParentCommentsLoaded }}>
+          <CommentsContainer/>
           <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
             <img src={banner} className="aspect-video" />
             <div className="mt-12">
