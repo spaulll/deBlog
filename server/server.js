@@ -709,6 +709,51 @@ Comment.find({blog_id, isReply:false})
 })
 
 })
+server.post("/change-password", verifyJWT, (req,res) => {
+  let {currentPassword, newPassword} = req.body;
+  if(!passwordRegex.test(currentPassword) || !passwordRegex.test(newPassword)){
+    return res.status(403).json({
+      error:
+        "Password must be 6-20 characters long, include at least one uppercase letter, one lowercase letter, and one digit.",
+    });
+
+  }
+    User.findOne({_id:req.user})
+    .then((user)=>{
+      if(user.google_auth){
+        return res.status(403).json({error: "you have loged in using google, so not possible to chnage password"})
+      }
+  
+      bcrypt.compare(currentPassword, user.personal_info.password,(err, result) => {
+        if(err){
+          return res.status(500).json({error: "some error occured please try again later"})
+        }
+  
+        if(!result){
+          return res.status(403).json({error: "Incorrect current password"})
+        }
+  
+        bcrypt.hash(newPassword, 10, (err, hashed_Password) => {
+  
+          User.findOneAndUpdate({_id: req.user},{"personal_info.password": hashed_Password})
+  
+          .then((u) => {
+            return res.status(200).json({status: 'password changed'})
+          })
+          .catch(err =>{
+            return res.status(500).json({error: 'some error occured while changing password, try again later'})
+          
+          })
+        })
+      })
+  
+    })
+    .catch(err =>{
+      return res.status(500).json({error: 'user not found'})
+    
+    })
+  }) 
+  
 
 // Start server
 server.listen(port, () => {
