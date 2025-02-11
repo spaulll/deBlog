@@ -32,7 +32,7 @@ const SideNav = () => {
 
   useEffect(()=>{
     setShowSideNav(false)
-    pageStateTab.current.click();
+    // pageStateTab.current.click();
   },[pageState])
 
   return access_token === null ? (

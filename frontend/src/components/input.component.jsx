@@ -1,6 +1,6 @@
 import { EyeClosed, Eye } from "lucide-react";
 import { useState } from "react";
-const InputBox = ({ name, type, id, value, placeholder, icon }) => {
+const InputBox = ({ name, type, id, value, placeholder, icon, disable = false }) => {
   const [passwordVisibility, setPasswordVisibility] = useState(false);
   return (
     <>
@@ -15,6 +15,7 @@ const InputBox = ({ name, type, id, value, placeholder, icon }) => {
           defaultValue={value}
           id={id}
           className="input-box"
+          disable = {disable}
         />
         {icon}
         {type == "password" ? (
