@@ -95,7 +95,7 @@ const PublishEditor = () => {
         toast.dismiss(loadingToast);
         toast.success("done");
         setTimeout(() => {
-          navigate("/");
+          navigate("/dashboard/blogs");
         }, 500);
       })
       .catch(({ response }) => {

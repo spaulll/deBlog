@@ -26,8 +26,8 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [similarBlog, setSimilarBlog] = useState(null);
   const [isLikedByUser,setIsLikedByUser]= useState(false);
-  const [commentWrapper,setCommentWrapper]= useState(true);
-  const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(false);
+  const [commentsWrapper,setCommentsWrapper]= useState(true);
+  const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
 
   let {
     title,
@@ -77,20 +77,22 @@ const BlogPage = () => {
     resetState();
     fetchBlog();
   }, [blog_id]); // Add blog_id as dependency
+
+
 const resetState=()=>{
   setBlogData(blogStructure)
   setSimilarBlog(null)
   setLoading(true)
   setIsLikedByUser(false)
-  // setCommentWrapper(false)
-  setTotalParentCommentsLoaded(false)
+  // setCommentsWrapper(false)
+  setTotalParentCommentsLoaded(0)
 }
   return (
     <AnimationWrapper>
       {loading ? (
         <Loader />
       ) : (
-        <BlogContext.Provider value={{ blogData, setBlogData, isLikedByUser, setIsLikedByUser, setCommentWrapper, setTotalParentCommentsLoaded, commentWrapper, totalParentCommentsLoaded }}>
+        <BlogContext.Provider value={{ blogData, setBlogData, isLikedByUser, setIsLikedByUser, setCommentsWrapper, setTotalParentCommentsLoaded, commentsWrapper, totalParentCommentsLoaded }}>
           <CommentsContainer/>
           <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
             <img src={banner} className="aspect-video" />
