@@ -1,50 +1,54 @@
 import React, { useState, useRef, useEffect } from "react";
 export let activeTabLineRef;
 export let activeTabRef;
-const InPageNavigation = ({ routes, defaultHidden, defaultActiveIndex = 0, children }) => {
+
+const InPageNavigation = ({ routes, defaultHidden = [], defaultActiveIndex = 0, children }) => {
   activeTabLineRef = useRef();
-  activeTabRef = useRef()
-  let [inPageNavIndex, setInPageNavIndex] = useState(0);
+  activeTabRef = useRef();
+  let [inPageNavIndex, setInPageNavIndex] = useState(defaultActiveIndex);
 
   const changePageState = (btn, i) => {
     let {offsetWidth, offsetLeft} = btn;
     activeTabLineRef.current.style.width = offsetWidth + "px";
     activeTabLineRef.current.style.left = offsetLeft + "px";
-    setInPageNavIndex(i)
+    setInPageNavIndex(i);
   };
-useEffect (()=>{
-    changePageState(activeTabRef.current, defaultActiveIndex)
-},[])
+
+  useEffect(() => {
+    if (activeTabRef.current) {
+      changePageState(activeTabRef.current, defaultActiveIndex);
+    }
+  }, []);
 
   return (
     <>
       <div className="relative mb-8 bg-white border-b border-grey flex flex-nowrap overflow-x-auto">
         {
-            routes.map((route, i) => {
+          routes.map((route, i) => {
             return (
-                <button
-                ref={i == defaultActiveIndex ? activeTabRef : null}
+              <button
+                ref={i === defaultActiveIndex ? activeTabRef : null}
                 className={
-                    "p-4 py-4 capitalize " +
-                    (inPageNavIndex == i ? "text-black " : "text-dark-grey ") + (defaultHidden.includes(route )? " md:hidden ": " ")
+                  "p-4 py-4 capitalize " +
+                  (inPageNavIndex === i ? "text-black " : "text-dark-grey ") + 
+                  (defaultHidden && defaultHidden.includes(route) ? " md:hidden " : " ")
                 }
                 key={i}
                 onClick={(e) => {
-                    changePageState(e.target, i);
+                  changePageState(e.target, i);
                 }}
-                >
+              >
                 {route}
-                </button>
+              </button>
             );
-            })
+          })
         }
         <hr
           ref={activeTabLineRef}
-          className=" absolute bottom-0 duration-300 text-twitter"
+          className="absolute bottom-0 duration-300 text-twitter"
         />
       </div>
-        {Array.isArray (children)? children[inPageNavIndex]: children}
-
+      {Array.isArray(children) ? children[inPageNavIndex] : children}
     </>
   );
 };
