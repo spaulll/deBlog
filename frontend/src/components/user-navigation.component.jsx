@@ -42,7 +42,7 @@ const UserNavigationPanel = ({ setUserNavPanel }) => {
         <Link to={`/user/${username}`} className="link pl-8 py-4">
           profile
         </Link>
-        <Link to={`/dashboard/blog`} className="link pl-8 py-4">
+        <Link to={`/dashboard/blogs`} className="link pl-8 py-4">
           Dashboard
         </Link>
         <Link to={`/settings/edit-profile`} className="link pl-8 py-4">
