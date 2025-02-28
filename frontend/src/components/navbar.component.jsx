@@ -2,9 +2,10 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import logo from "../imgs/dblog.webp";
 import { Search, PenLine, Bell } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
+import axios from "axios";
 
 const Navbar = () => {
   const [searchboxvisibility, setSearchboxvisibility] = useState(false);
@@ -24,15 +25,37 @@ const Navbar = () => {
 
   const {
     userAuth,
-    userAuth: { access_token, profile_img },
+    userAuth: { access_token, profile_img, new_notification_available }, setUserAuth
   } = useContext(UserContext);
+
+
+  useEffect(( ) => {
+    if(access_token){
+      axios.get(import.meta.env.VITE_SERVER_URL + "/new-notification", {headers:{
+        'Authorization': `Bearer ${access_token}`
+      }})
+      .then(({data}) => {
+        setUserAuth({...userAuth, ...data })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    }
+
+    
+  },[access_token])
 
   return (
     <>
-      <nav className="navbar">
+      <nav className="navbar z-50">
         <Link to="/" className="flex-none w-11 md:w-16">
           <img src={logo} className="w-full rounded-2xl" alt="Logo" />
         </Link>
+
+        {
+          new_notification_available 
+        }
+
         <div
           className={
             "absolute bg-white w-full left-0 top-full mt-0.5 border-b border-grey py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto md:show flex items-center " +
@@ -62,9 +85,14 @@ const Navbar = () => {
           </Link>
           {access_token ? (
             <>
-              <Link to="/dashboard/notification">
+              <Link to="/dashboard/notifications">
                 <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-purple-100">
-                  <Bell size="20px" className="text-2xl block mt-1 ml-3" />
+                  <Bell size="20px" className="text-2xl block mt-1 ml-3" />{
+                    new_notification_available ?
+                    <span className="bg-red w-3 h-3 rounded-full absolute z-10 right-1 top-0 "></span>
+                    : 
+                    ""
+                  }
                 </button>
               </Link>
 

@@ -5,7 +5,7 @@ import { Bell, Edit, FileText, Menu, RectangleEllipsis, User } from "lucide-reac
 
 const SideNav = () => {
   let {
-    userAuth: { access_token },
+    userAuth: { access_token, new_notification_available },
   } = useContext(UserContext);
   let page = location.pathname.split("/")[2];
   page = page.replace("-",' ')
@@ -63,16 +63,22 @@ const SideNav = () => {
             </NavLink>
 
             <NavLink
-              to="/dashboard/notification"
+              to="/dashboard/notifications"
               onClick={(e) => setPageState(e.target.innerText)}
               className="sidebar-link"
             >
               <Bell />
+              {
+                    new_notification_available ?
+                    <span className="bg-red w-3 h-3 rounded-full absolute z-10 left-10 top-[146px] md:right-0 md:top-0"></span>
+                    : 
+                    ""
+                  }
               Notification
             </NavLink>
 
             <NavLink
-              to="/dashboard/editor"
+              to="/editor"
               onClick={(e) => setPageState(e.target.innerText)}
               className="sidebar-link"
             >
@@ -96,7 +102,7 @@ const SideNav = () => {
               className="sidebar-link"
             >
               <RectangleEllipsis />
-              change passwod
+              change password
             </NavLink>
           </div>
         </div>
