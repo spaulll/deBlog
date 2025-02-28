@@ -21,7 +21,6 @@ const BlogEditor = () => {
     setTextEditor,
     setEditorState,
   } = useContext(EditoContext);
-  // console.log(blog);
   //access token
   let {
     userAuth: { access_token },
@@ -129,11 +128,12 @@ const BlogEditor = () => {
             },
           })
           .then(() => {
+            console.log(blog);
             e.target.classList.remove("disable");
             toast.dismiss(loadingToast);
             toast.success("Saved");
             setTimeout(() => {
-              navigate("/");
+              navigate("/dashboard/blogs");
             }, 500);
           })
           .catch(({ response }) => {
