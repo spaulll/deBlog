@@ -19,6 +19,7 @@ import { verify } from "crypto";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
+import { title } from "process";
 
 // Regex patterns for validation
 const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -332,6 +333,7 @@ server.post("/create-blog", verifyJWT, (req, res) => {
   let authorId = req.user;
   console.log(authorId);
   let { title, des, banner, tags, content, draft, id } = req.body;
+  console.log (title,+"/n"+ des,+"/n"+ banner,+"/n"+ tags,+"/n"+ content,+"/n"+ draft,+"/n"+ id +"hello")
   if (!title.length) {
     return res
       .status(403)
@@ -550,6 +552,7 @@ server.post("/google-auth", async (req, res) => {
 });
 server.post("/get-blog", (req, res) => {
   let { blog_id, draft, mode } = req.body;
+  console.log(blog_id,mode)
   let incrementVal = mode != "edit" ? 1 : 0;
   Blog.findOneAndUpdate(
     { blog_id },
@@ -640,7 +643,7 @@ server.post("/isliked-by-user", verifyJWT, (req, res) => {
 server.post("/add-comment", verifyJWT, (req, res) => {
   let user_id = req.user;
 
-  let { _id, comment,blog_author, replyomg_to } = req.body;
+  let { _id, comment, blog_author } = req.body;
 
   if (!comment.length) {
     return res
@@ -648,28 +651,35 @@ server.post("/add-comment", verifyJWT, (req, res) => {
       .json({ error: "write something to leave a comment" });
   }
 
-  let commentObj = new Comment({
+  let commentObj = {
     blog_id: _id,
     blog_author,
     comment,
     commented_by: user_id,
-  });
+  };
 
-  commentObj
+  // if(replying_to){
+  //   commentObj.parent = replying_to;
+  // }
+  new Comment(commentObj)
     .save()
-    .then((commentFile) => {
-      let { comment, commentedAt, childrean } = commentFile;
+    .then( async (commentFile) => {
+      let { comment, commentedAt, children } = commentFile;
       Blog.findOneAndUpdate(
         { _id },
         {
-          $push: { comments: commentFile._id },
-          $inc: { "activity.total_comments": 1,"activity.total_parent_comments": 1 },
+          $push: { "comments": commentFile._id },
+          $inc: { "activity.total_comments": 1,"activity.total_parent_comments": 1 }
+          // $inc: { "activity.total_comments": 1,"activity.total_parent_comments": replying_to ? 0 : 1 },
           
         }
       ).then((blog) => {
         console.log("New comment created");
       });
+
+
       let notificationObj = {
+        // type: replying_to? "reply" : "comment",
         type: "comment",
         blog: _id,
         notification_for: blog_author,
@@ -677,13 +687,21 @@ server.post("/add-comment", verifyJWT, (req, res) => {
         comment: commentFile._id,
       };
 
+      // if(replying_to){
+      //   notificationObj.replied_on_comment = replying_to;
+      //   await Comment.findANdUpdate({_id:replying_to},{$push:{ children: commentFile._id } } )
+      //   .then(replyingToCommentDoc => {
+      //     notificationObj.notification_for = replyingToCommentDoc.commented_by
+      //   })
+      // }
+
       new Notification(notificationObj)
         .save()
         .then((notification) => console.log("new notification created"));
 
       return res
         .status(200)
-        .json({ comment, commentedAt, _id: commentFile._id, user_id, childrean });
+        .json({ comment, commentedAt, _id: commentFile._id, user_id, children });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
@@ -823,6 +841,172 @@ server.post("/update-profile", verifyJWT, (req,res) =>{
     return res.status(500).json({error : err.message})
   })
 })
+
+
+server.get("/new-notification", verifyJWT,(req,res) =>{
+  let user_id = req.user;
+  Notification.exists({notification_for: user_id, seen:false, user:{$ne:user_id}})
+  .then(result =>{
+    if(result){
+      return res.status(200).json({new_notification_available: true}) 
+    }else{
+      return res.status(200).json({new_notification_available: false })
+    }
+  })
+  .catch(err => {
+    console.log(err.message);
+    return res.status(500).json(err.message)
+  })
+
+})
+
+
+
+server.post ( "/notification", verifyJWT, (req,res) => {
+  let user_id = req.user;
+  let {page, filter, deletedDocCount } = req.body
+
+  let maxLimit = 10;
+
+  let findQuery = {notification_for:user_id, user:{$ne: user_id}};
+
+  let skipDocs = (page -1 ) * maxLimit;
+
+  if(filter != 'all') {
+    findQuery.type = filter;
+  }
+  if(deletedDocCount){
+    skipDocs -= deletedDocCount;
+  }
+  Notification.find(findQuery)
+  .skip(skipDocs)
+  .limit(maxLimit)
+  .populate("blog", "title blog_id")
+  .populate("user", "personal_info.fullname personal_info.username personal_info.profile_img")
+  .populate("comment", "comment")
+  .populate("replied_on_comment", "comment")
+  .populate("reply", "comment")
+  .sort({createdAt:-1})
+  .select("createdAt type seen reply")
+  .then(notification =>{
+    Notification.updateMany(findQuery, {seen:true})
+    .skip(skipDocs)
+    .limit(maxLimit)
+    .then(() => console.log('notification seen'));
+     return res.status(200).json({notification })
+
+  })
+
+  .catch(err => {
+    console.log(err.message);
+    return res.status(500).json(err.message)
+  })
+
+
+})
+
+server.post("/all-notification-count", verifyJWT, (req,res) => {
+  let user_id = req.user;
+  let{ filter} = req.body;
+
+  let findQuery = {notification_for:user_id, user:{$ne:user_id}}
+  if(filter != 'all'){
+    findQuery.type = filter;
+
+  }
+
+  Notification.countDocuments(findQuery)
+  .then ( count => {
+    return res.status(200).json({totalDocs: count })
+
+  })
+
+  .catch(err => {
+    console.log(err.message);
+    return res.status(500).json(err.message)
+  })
+})
+//user written blogs
+server.post("/user-written-blogs", verifyJWT,(req,res)=>{
+  let user_id =req.user;
+  let {page, draft, query, deletedDocCount} = req.body;
+  let maxLimit = 2;
+  let skipDocs =( page - 1 ) * maxLimit;
+  if(deletedDocCount){
+    skipDocs -= deletedDocCount;
+  }
+  Blog.find({author:user_id,draft, title:new RegExp(query, 'i') })
+  .skip(skipDocs)
+  .limit(maxLimit)
+  .sort({publishedAt: -1})
+  .select("title banner publishedAt blog_id activity des draft -_id")
+  .then( blogs =>{
+    return res.status(200).json({ blogs})
+  })
+  .catch( err => {
+    return res.status(500).json ({error: err.message});
+  })
+
+})
+
+server.post("/user-written-blogs-count", verifyJWT, (req,res) => {
+  let user_id =req.user;
+  let { draft, query} = req.body;
+  Blog.countDocuments({author:user_id,draft, title:new RegExp(query, 'i') })
+  .then (count =>{
+    return res.status(200).json({totalDocs: count})
+  })
+  .catch (err => {
+    console.log(err.message)
+    return res.status(500).json({error:err.message})
+  })
+
+
+})
+
+server.post("/delete-blog", verifyJWT, async (req, res) => {
+  try {
+    let user_id = req.user;
+    let { blog_id } = req.body;
+    
+    // First verify the blog exists and belongs to the user
+    const blog = await Blog.findOne({ blog_id, author: user_id });
+    
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found or you don't have permission to delete it" });
+    }
+    
+    // Delete the blog
+    await Blog.findOneAndDelete({ _id: blog._id });
+    
+    // Run all these operations in parallel using Promise.all without individual .then()
+    await Promise.all([
+      // Delete associated notifications
+      Notification.deleteMany({ blog: blog._id }),
+      
+      // Delete associated comments
+      Comment.deleteMany({ blog: blog._id }),
+      
+      // Update user document
+      User.findOneAndUpdate(
+        { _id: user_id },
+        { 
+          $pull: { blogs: blog_id }, 
+          $inc: { "account_info.total_posts": -1 }
+        }
+      )
+    ]);
+    
+    console.log("Blog and related data deleted successfully");
+    
+    // Only send response after all operations complete
+    return res.status(200).json({ status: 'done', deletedBlogId: blog_id });
+  } catch (err) {
+    console.error("Error deleting blog:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // Start server
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

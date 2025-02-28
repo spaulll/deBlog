@@ -26,7 +26,7 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [similarBlog, setSimilarBlog] = useState(null);
   const [isLikedByUser,setIsLikedByUser]= useState(false);
-  const [commentsWrapper,setCommentsWrapper]= useState(true);
+  const [commentsWrapper,setCommentsWrapper]= useState(false);
   const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
 
   let {
@@ -84,7 +84,7 @@ const resetState=()=>{
   setSimilarBlog(null)
   setLoading(true)
   setIsLikedByUser(false)
-  // setCommentsWrapper(false)
+  setCommentsWrapper(false)
   setTotalParentCommentsLoaded(0)
 }
   return (

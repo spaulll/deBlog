@@ -126,7 +126,7 @@ const BlogInteraction = () => {
 
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
-            // onClick={() => setCommentsWrapper(preVal => !preVal)}
+            onClick={() => setCommentsWrapper(preVal => !preVal)}
           >
             <MessageSquare />
           </button>

@@ -22,35 +22,35 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
   const handleReplyClick = () => {
     if (!access_token) {
-      toast.error("Please login first to reply");
-      return;
+      
+      return toast.error("Please login first to reply");;
     }
-    setIsReplying(prev => !prev);
+    setIsReplying(preVal => !preVal);
   };
 
   return (
     <>
       <Toaster />
-      <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px` }}>
+      <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px ` }}>
         <div className="my-5 p-6 rounded-md border border-grey">
           <div className="flex gap-3 items-center mb-8 pe-3 bg-purple/[10%] rounded-3xl p-2">
-            <img src={profile_img} alt={username} className="w-12 h-12 rounded-full" />
+            <img src={profile_img} alt={username} className="w-6 h-6 rounded-full" />
             <p className="line-clamp-1">{fullname} @{username}</p>
             <p className="min-w-fit">{getDay(commentedAt)}</p>
           </div>
 
           <p className="font-gelasio text-xl ml-10">{comment}</p>
-          
-          <div className="flex gap-5 items-center mt-5">
+          {/*this is the reply and hide reply buttom and reply card part thats why it is commented */}
+          {/* <div className="flex gap-5 items-center mt-5">
             {commentData.isReplyLoaded && (
               <button className="btn-light">Hide replies</button>
             )}
             <button className="btn-light" onClick={handleReplyClick}>
               Reply
             </button>
-          </div>
+          </div> */}
 
-          {isReplying && (
+          {/* {isReplying && (
             <div className="mt-8">
               <CommentField
                 action="reply"
@@ -59,7 +59,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                 setReplying={setIsReplying}
               />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </>
