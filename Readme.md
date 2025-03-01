@@ -1,24 +1,89 @@
-# Fullstack MERN Blogging Website
+# deBlog
+---
+A **decentralized blogging platform** built on Web3, leveraging **IPFS** for storage, **Base Sepolia** for blockchain transactions, and **Thirdweb** for wallet connection & contract interactions. Users can **write blogs, like/dislike posts, comment, and tip creators in ETH/USDC**.
 
-Fork this repo of "MERN Blogging Website" to start following the video tutorial.
+---
 
-Checkout website demo - [Demo](https://youtu.be/J7BGuuuvDDk)
+## 🚀 Tech Stack
 
-![Thumbnail](https://c10.patreonusercontent.com/4/patreon-media/p/post/90122909/dd5363bd03fb4a6c8fcd5d15df98e6bf/eyJ3Ijo4MjB9/1.png?token-time=1697414400&token-hash=BZ-Mzp19WnBLcCFB8LmJFDw98mpnCRGcOCt_T615miY%3D)
+### Frontend
+- **React.js** (UI framework)
+- **Tailwind CSS** (styling)
+- **Thirdweb SDK** (wallet connection & contract interaction)
 
-This website features include -
-1. Modern Blog Editor using Editor JS.
-2. Google Authentication for Users
-3. Dynamic Blog Pages on dynamic urls.
-4. Search Page for Searching Blogs & users.
-5. Dedicated Users Profile with thier social links and written blogs.
-6. Dedicated dashboard to manage blogs either published or draft.
-7. Blog Post Analytics, editable and deletable.
-8. Like interaction on Blogs with feature to comment on the blog.
-9. Reply to comments. ( A nested Comment System )
-10. Every interaction on site stores as a notification for their respective users.
-11. Recent notification highlight separating them from old notifications.
-12. Edit profile option to update social links, bio and username
-13. Also user can change login password from settings.
-14. Its mobile responsive with modern design + fade in animation on pages.
-And much more.
+### Backend / Blockchain
+- **Node.js** (backend server)
+- **Solidity** (smart contracts)
+- **EVM (Base Sepolia testnet)** (blockchain execution)
+- **IPFS (via Pinata)** (decentralized storage)
+- **SIWE (Sign-In with Ethereum)** (authentication)
+
+## ⚡ Features
+- **Decentralized Blog Storage**: Blogs are stored on IPFS for censorship resistance.
+- **On-Chain Interactions**: Like, dislike, and comment functionalities stored on Base Sepolia.
+- **Tipping System**: Readers can tip content creators in ETH/USDC.
+- **Web3 Authentication**: Users sign in using their Ethereum wallet (SIWE).
+
+<!-- ## 📌 Installation & Setup -->
+
+### Prerequisites
+- **Node.js** (v16+ recommended)
+- **Metamask Wallet** (or any Web3 wallet)
+- **Thirdweb account** (for contract management)
+- **Pinata account** (for IPFS storage)
+
+<!-- ### Clone the Repository
+```sh
+git clone https://github.com/spaulll/deBlog.git
+cd deBlog
+```
+
+### Install Dependencies
+```sh
+npm install
+```
+
+### Environment Variables
+Create a **.env** file in the root directory and add:
+```env
+
+```
+
+### Run the Development Server
+```sh
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser. -->
+
+<!-- ## 📝 Smart Contract
+The smart contracts are written in **Solidity** and deployed on **Base Sepolia Testnet**.
+- **BlogManager.sol**: Handles blog metadata, storage, and retrieval.
+- **Interactions.sol**: Manages likes, dislikes, and comments.
+- **Tipping.sol**: Allows users to tip blog creators in ETH/USDC.
+
+### Deploy Smart Contracts
+1. Set up a Hardhat project inside `contracts/` directory.
+2. Configure the **Base Sepolia network** in `hardhat.config.js`.
+3. Compile & deploy contracts:
+```sh
+npx hardhat compile
+npx hardhat run scripts/deploy.js --network base-sepolia
+``` -->
+
+---
+## 🌍 Future Enhancements
+- **Mainnet Deployment** on Base blockchain.
+- **NFT Integration**: Tokenizing blogs as NFTs.
+- **Optimized Gas Usage** for likes/dislikes.
+- **More Storage Options** (Arweave, Lit Protocol, etc.).
+
+---
+## 🤝 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+<!-- ## 📜 License
+MIT License. See `LICENSE` for details. -->
+
+---
+## 🎯 Contact
+For questions or collaborations, reach out at [𝕏](https://x.com/SP889900).
