@@ -1,10 +1,10 @@
-# Environment variables
+# Node modules directory
+node_modules/
+
+# Environment variable files
 .env
 .env.local
 .env.*.local
-
-# Firebase service account key
-react-js-blog-website-c3587-firebase-adminsdk-yrei8-8bdd095672.json
 
 # Logs
 logs/
@@ -12,9 +12,6 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Dependency directories
-node_modules/
 
 # OS generated files
 .DS_Store
@@ -28,4 +25,12 @@ Thumbs.db
 *.tmp
 *.swp
 *.lock
-*.db
+
+# Build and output directories
+build/
+dist/
+
+# Test coverage
+coverage/
+
+package-lock.json
