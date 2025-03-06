@@ -1,20 +1,32 @@
-// Navbar.jsx
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import logo from "../imgs/dblog.webp";
+import logo from "../imgs/logo.webp";
 import { Search, PenLine, Bell } from "lucide-react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
-import axios from "axios";
+// import axios from "axios";
+import ConnectButtonAuth from "./web3Component/ConnectButtonAuth";
+import { getAvatar } from "../lib/contractInteraction";
+import { useActiveAccount } from 'thirdweb/react';
+import { useAuth } from "../contexts/AuthContext";
 
 const Navbar = () => {
   const [searchboxvisibility, setSearchboxvisibility] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
   let navigate = useNavigate();
 
-  const handelSearch = (e) =>{
+  const [isAvatarLoading, setIsAvatarLoading] = useState(true);
+  const [localAvatar, setLocalAvatar] = useState(null);  // NEW: Local state to track UI updates
+
+  const { isLoggedIn, avatarUrl, setAvatarUrl } = useAuth();
+  const address = useActiveAccount()?.address ?? "";
+  // for debugging
+  console.log("isLoggedIn:", isLoggedIn);
+  console.log("Wallet address:", address);
+
+  const handelSearch = (e) => {
     let query = e.target.value;
-    if(e.keyCode == 13 && query.length){
+    if (e.keyCode == 13 && query.length) {
       navigate(`/search/${query}`);
 
     }
@@ -23,27 +35,38 @@ const Navbar = () => {
     setUserNavPanel((currentvalue) => !currentvalue);
   };
 
-  const {
-    userAuth,
-    userAuth: { access_token, profile_img, new_notification_available }, setUserAuth
-  } = useContext(UserContext);
-
-
-  useEffect(( ) => {
-    if(access_token){
-      axios.get(import.meta.env.VITE_SERVER_URL + "/new-notification", {headers:{
-        'Authorization': `Bearer ${access_token}`
-      }})
-      .then(({data}) => {
-        setUserAuth({...userAuth, ...data })
-      })
-      .catch(err => {
-        console.log(err)
-      })
+  const fetchAvatarUrl = async () => {
+    console.log("Fetching avatar for address:", address);
+    try {
+      const avatarUrl = await getAvatar(address);
+      console.log("Fetched Avatar URL:", avatarUrl);
+      return avatarUrl;
+    } catch (error) {
+      console.error("Error fetching avatar:", error);
+      return null;
     }
+  };
 
-    
-  },[access_token])
+  useEffect(() => {
+    if (isLoggedIn) {
+      setIsAvatarLoading(true);
+      console.log("Fetching avatar...");
+
+      fetchAvatarUrl().then((avatarUrl) => {
+        const finalAvatarUrl = avatarUrl || "https://api.dicebear.com/9.x/adventurer/svg?seed=default";
+
+        setAvatarUrl(finalAvatarUrl);  // Update global state
+        setLocalAvatar(finalAvatarUrl); // Update local state to trigger re-render
+
+        console.log("Final Avatar URL in state:", finalAvatarUrl);
+        setIsAvatarLoading(false);
+      });
+    }
+  }, [isLoggedIn]);
+
+  console.log("isAvatarLoading state:", isAvatarLoading);
+  console.log("Avatar URL before rendering:", localAvatar);  // Updated to use local state
+
 
   return (
     <>
@@ -52,9 +75,9 @@ const Navbar = () => {
           <img src={logo} className="w-full rounded-2xl" alt="Logo" />
         </Link>
 
-        {
+        {/* {
           new_notification_available 
-        }
+        } */}
 
         <div
           className={
@@ -79,42 +102,46 @@ const Navbar = () => {
           >
             <Search className="absolute text-xl" />
           </button>
-          <Link to="/editor" className="hidden md:flex gap-2 link">
-            <PenLine className="w-6" />
-            <p>write...</p>
-          </Link>
-          {access_token ? (
+
+          {isLoggedIn ? (
             <>
-              <Link to="/dashboard/notifications">
+              <Link to="/editor" className="hidden md:flex gap-2 link">
+                <PenLine className="w-6" />
+                <p>write...</p>
+              </Link>
+
+              {/*  */}
+              {/* Will be added later */}
+              {/*  */}
+              {/* <Link to="/dashboard/notifications">
                 <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-purple-100">
                   <Bell size="20px" className="text-2xl block mt-1 ml-3" />{
                     new_notification_available ?
-                    <span className="bg-red w-3 h-3 rounded-full absolute z-10 right-1 top-0 "></span>
-                    : 
-                    ""
+                      <span className="bg-red w-3 h-3 rounded-full absolute z-10 right-1 top-0 "></span>
+                      :
+                      ""
                   }
                 </button>
-              </Link>
+              </Link> */}
 
               <div className="relative">
-                <button className="w-12 h-12 mt-1" onClick={handeluserNavPanel}>
-                  <img
-                    src={profile_img}
-                    className="w-full h-full rounded-full object-cover"
-                  />
+                <button className="w-12 h-12 mt-1" onClick={() => setUserNavPanel((prev) => !prev)}>
+                  {isAvatarLoading || !localAvatar ? (
+                    <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>  // Show loading
+                  ) : (
+                    <img
+                      src={localAvatar}
+                      className="w-full h-full rounded-full object-cover"
+                      alt="User Avatar"
+                      onError={(e) => (e.target.src = "https://api.dicebear.com/9.x/adventurer/svg?seed=default")}
+                    />
+                  )}
                 </button>
               </div>
               {userNavPanel ? <UserNavigationPanel setUserNavPanel={setUserNavPanel} /> : ""}
             </>
           ) : (
-            <>
-              <Link className="btn-dark py-2" to="/signin">
-                Sign In
-              </Link>
-              <Link className="btn-light py-2 hidden md:block" to="/signup">
-                Sign UP
-              </Link>
-            </>
+            <ConnectButtonAuth />
           )}
         </div>
       </nav>
