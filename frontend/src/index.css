@@ -87,7 +87,7 @@
     }
 
     #textEditor h2, h2{
-        @apply font-inter text-4xl leading-normal font-bold max-md:text-3xl max-md:leading-snug !important;
+        @apply font-inter leading-normal font-bold max-md:text-3xl max-md:leading-snug !important;
     }
 
     #textEditor h3, h3 {
