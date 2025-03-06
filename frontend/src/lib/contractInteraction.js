@@ -20,14 +20,16 @@ const getUserProfile = async (address) => {
 };
 
 const getAvatar = async (address) => {
+    console.log("getAvatar() called:", address);
     address = "0x726DCb71dc9298D87796309cdBAf3220EbC68472";
     try {
         const userProfile = await getUserProfile(address);
         const avatarUrl = userProfile.avatarUrl;
-        return "https://ui-avatars.com/api/?name=lobstr";
+        // const avatarUrl = "https://api.dicebear.com/9.x/adventurer/svg?seed=random";
+        return avatarUrl;
     } catch (error) {
         console.error(error);
-        return null;
+        return "https://api.dicebear.com/9.x/adventurer/svg?seed=error";
     }
 };
 
