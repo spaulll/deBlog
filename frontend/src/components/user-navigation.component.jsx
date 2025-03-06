@@ -3,13 +3,16 @@ import { Link } from "react-router-dom";
 import { PenLine } from "lucide-react";
 import { useContext, useEffect, useRef } from "react";
 import { UserContext } from "../App";
-import { removeFromSession } from "../common/session";
+// import { removeFromSession } from "../common/session";
+
+import { Logout, WalletInfo} from "./web3Component/logout";
+
 
 const UserNavigationPanel = ({ setUserNavPanel }) => {
-  const {
-    userAuth: { username },
-    setUserAuth,
-  } = useContext(UserContext);
+  // const {
+  //   userAuth: { username },
+  //   setUserAuth,
+  // } = useContext(UserContext);
   
   const navRef = useRef(null);
 
@@ -24,11 +27,12 @@ const UserNavigationPanel = ({ setUserNavPanel }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [setUserNavPanel]);
 
-  const signOutUser = () => {
-    removeFromSession("user");
-    setUserAuth({ access_token: null });
-  };
+  // const signOutUser = () => {
+  //   removeFromSession("user");
+  //   setUserAuth({ access_token: null });
+  // };
 
+  const username = "user"     // for testing
   return (
     <AnimatePresence
       transition={{ duration: 0.2 }}
@@ -49,13 +53,18 @@ const UserNavigationPanel = ({ setUserNavPanel }) => {
           Settings
         </Link>
         <span className="absolute border-t border-grey w-[100%]"></span>
-        <button
+        {/* <button
           className="text-left p-4 hover:bg-grey w-full pl-8 py-4"
           onClick={signOutUser}
         >
           <h1 className="font-bold text-xl mg-1">Signout</h1>
           <p className="text-dark-grey">@{username}</p>
-        </button>
+        </button> */}
+        
+        {/* Logout and Wallet info modal */}
+        <Logout/>   
+        <WalletInfo/>
+        
       </div>
     </AnimatePresence>
   );
