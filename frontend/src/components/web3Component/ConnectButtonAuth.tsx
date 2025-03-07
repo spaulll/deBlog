@@ -3,13 +3,13 @@ import { ConnectButton } from "thirdweb/react";
 import { client } from "../../lib/client";
 import { LoginPayload, VerifyLoginPayloadParams } from "thirdweb/auth";
 import { get, post } from "../../lib/api";
-import { baseSepolia } from "thirdweb/chains";
 import { useAuth } from "../../contexts/AuthContext";
 import { useConnectModal } from "thirdweb/react";
 import { getAvatar } from '../../lib/contractInteraction';
 import { useActiveAccount } from 'thirdweb/react';
 import Cookies from 'js-cookie';
 import { useEffect } from 'react';
+import { chain } from '../../lib/chain';
 
 import logo from "../../imgs/logo.webp";
 
@@ -45,7 +45,7 @@ export default function ConnectButtonAuth() {
                 }}
 
                 accountAbstraction={{
-                    chain: baseSepolia,
+                    chain: chain,
                     sponsorGas: true,
                 }}
 
@@ -68,7 +68,7 @@ export default function ConnectButtonAuth() {
                             url: "http://localhost:3000" + "/login",
                             params: {
                                 address: params.address,
-                                chainId: baseSepolia.id.toString(),
+                                chainId: chain.id.toString(),
                             },
                         });
                     },
