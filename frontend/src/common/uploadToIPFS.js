@@ -1,4 +1,5 @@
-// imageUploadUtil.js
+// uploadToIPFS.js
+
 const getImgURL = async (img) => {
   try {
     const formData = new FormData();
@@ -7,6 +8,7 @@ const getImgURL = async (img) => {
     const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/upload-img-return-URL`, {
       method: "POST",
       body: formData,
+      credentials: "include",
     });
     
     const result = await response.json();
