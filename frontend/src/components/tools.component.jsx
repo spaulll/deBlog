@@ -46,6 +46,7 @@ export const tools = {
             fetch(`${import.meta.env.VITE_SERVER_URL}/upload-img-return-URL`, {
               method: "POST",
               body: formData,
+              credentials: "include",
             })
               .then((response) => response.json())
               .then((result) => {
