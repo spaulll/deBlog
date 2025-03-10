@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { createContext, useState, useEffect } from "react"; // Fixed import
 import Navbar from "./components/navbar.component";
-import UserAuthForm from "./pages/userAuthForm.page";
+// import UserAuthForm from "./pages/userAuthForm.page";
 import { lookInSession } from "./common/session";
 import Editor from "./pages/editor.pages";
 import HomePage from "./pages/home.page";
@@ -18,17 +18,17 @@ import ManageBlogs from "./pages/manage-blogs.page";
 export const UserContext = createContext({});
 
 const App = () => {
-  const [userAuth, setUserAuth] = useState({ access_token: null });
+  // const [userAuth, setUserAuth] = useState({ access_token: null });
 
-  useEffect(() => {
-    const UserInSession = lookInSession("user");
-    if (UserInSession) {
-      setUserAuth(JSON.parse(UserInSession));
-    }
-  }, []);
+  // useEffect(() => {
+  //   const UserInSession = lookInSession("user");
+  //   if (UserInSession) {
+  //     setUserAuth(JSON.parse(UserInSession));
+  //   }
+  // }, []);
 
   return (
-    <UserContext.Provider value={{ userAuth, setUserAuth }}>
+    // <UserContext.Provider value={{ userAuth, setUserAuth }}>
       <Routes>
       <Route path="/editor" element={<Editor/>} />
       <Route path="/editor/:blog_id" element={<Editor/>} />
@@ -44,15 +44,15 @@ const App = () => {
           <Route path="change-password" element={<ChangePassword/>}/>
           </Route>
           
-          <Route path="signin" element={<UserAuthForm type="sign-in" />} />
-          <Route path="signup" element={<UserAuthForm type="sign-up" />} />
+          {/* <Route path="signin" element={<UserAuthForm type="sign-in" />} />
+          <Route path="signup" element={<UserAuthForm type="sign-up" />} /> */}
           <Route path="search/:query" element={ <SearchPage/> } />
           <Route path="user/:id" element={<ProfilePage/>}/>
           <Route path="blog/:blog_id" element={<BlogPage/>}/>
           <Route path="*" element ={<PageNotFound/>}/>
         </Route>
       </Routes>
-    </UserContext.Provider>
+    // </UserContext.Provider>
   );
 };
 
