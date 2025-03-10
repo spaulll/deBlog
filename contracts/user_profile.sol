@@ -13,6 +13,7 @@ contract UserProfile {
     /// @notice Emitted when a new post is created.
     event PostCreated(
         address indexed userAddress, 
+        string indexed username,
         uint32 postId, 
         string content, 
         uint32 timestamp
@@ -59,6 +60,7 @@ contract UserProfile {
         uint32 timestamp;     // Timestamp when the post was created (seconds since epoch)
         uint32 commentCount;  // Count of comments on this post
         bool edited;          // Flag indicating if the post has been edited
+        bool draft;           // Flag indicating if the post is a draft
         string content;       // Content of the post (dynamic, stored separately)
     }
 
@@ -86,12 +88,13 @@ contract UserProfile {
     // First key: Post owner.
     // Second key: Post index (uint32).
     // Third key: User address.
-    mapping(address => mapping(address => mapping(uint32 => bool))) private hasLiked;
-    mapping(address => mapping(address => mapping(uint32 => bool))) private hasDisliked;
+    mapping(address => mapping(address => mapping(uint32 => bool))) public hasLiked;
+    mapping(address => mapping(address => mapping(uint32 => bool))) public hasDisliked;
 
     // Mapping to track if a username already exists.
-    mapping(bytes32 => bool) internal usernameExists;
+    mapping(bytes32 => bool) public usernameExists;
 
+    mapping(address => bool) public isRegistered;
     // Nested mapping for storing comments.
     // First key: Owner of the post.
     // Second key: Post index (uint32).
@@ -153,6 +156,7 @@ contract UserProfile {
 
         users[msg.sender] = newUser;
         usernameExists[usernameHash] = true; // Mark the username as taken
+        isRegistered[msg.sender] = true;
 
         emit UserProfileCreated(msg.sender, _username);
     }
@@ -217,13 +221,14 @@ contract UserProfile {
             timestamp: uint32(block.timestamp),
             commentCount: 0,
             edited: false,
+            draft: false,
             content: _content
         });
 
         // Increment the user's postCount.
         user.postCount += 1;
 
-        emit PostCreated(msg.sender, postId, _content, uint32(block.timestamp));
+        emit PostCreated(msg.sender, user.username, postId, _content, uint32(block.timestamp));
     }
 
     /// @notice Edit an existing post.
@@ -239,6 +244,10 @@ contract UserProfile {
 
         emit PostEdited(msg.sender, postIndex, _newContent, uint32(block.timestamp));
     }
+
+// function editDraftPost(uint32 postIndex, string calldata _newContent) external onlyRegistered onlyProfileOwner {
+    
+// }
 
     /// @notice Like or dislike a post.
     /// @param _userAddress The address of the post owner.
@@ -283,6 +292,7 @@ contract UserProfile {
     /// @param postIndex The index (ID) of the post.
     /// @return post The Post struct containing post details.
     function getPost(address _userAddress, uint32 postIndex) external view returns (Post memory post) {
+        require(userPosts[_userAddress][postIndex].draft == false, "Draft posts cannot be fetched");
         require(bytes(userPosts[_userAddress][postIndex].content).length > 0, "Post does not exist");
         post = userPosts[_userAddress][postIndex];
     }
