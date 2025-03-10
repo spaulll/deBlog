@@ -9,7 +9,7 @@ import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
 
 const PublishEditor = () => {
-  let {blog_id}=useParams()
+  let { blog_id } = useParams()
   let characterLimit = 200;
   const tagLimit = 16;
   let {
@@ -19,9 +19,9 @@ const PublishEditor = () => {
     setBlog,
   } = useContext(EditoContext);
 
-  let {
-    userAuth: { access_token },
-  } = useContext(UserContext);
+  // let {
+  //   userAuth: { access_token },
+  // } = useContext(UserContext);
   let navigate = useNavigate();
 
   const handelCloseEvent = () => {
@@ -81,13 +81,16 @@ const PublishEditor = () => {
       banner,
       content,
       tags,
-      draft:false
+      draft: false
     };
     console.log(blogObj)
+    let blogJson = JSON.stringify(blogObj);
+    console.log("Blog JSON", blogJson);
     axios
-      .post(import.meta.env.VITE_SERVER_URL + "/create-blog", {...blogObj,id:blog_id}, {
+      .post(import.meta.env.VITE_SERVER_URL + "/create-blog", { ...blogObj, id: blog_id }, {
+        withCredentials: true,
         headers: {
-          Authorization: `Bearer ${access_token}`,
+          contentType: "application/json",
         },
       })
       .then(() => {

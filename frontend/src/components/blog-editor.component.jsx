@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import logo from "../imgs/dblog.webp";
 import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
-import getImgURL from "../common/aws";
+import getImgURL from "../common/uploadToIPFS";
 import { useContext, useEffect, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { EditoContext } from "../pages/editor.pages";
@@ -22,9 +22,9 @@ const BlogEditor = () => {
     setEditorState,
   } = useContext(EditoContext);
   //access token
-  let {
-    userAuth: { access_token },
-  } = useContext(UserContext);
+  // let {
+  //   userAuth: { access_token },
+  // } = useContext(UserContext);
   let navigate = useNavigate();
   //ossum part + portion
   useEffect(() => {
@@ -121,10 +121,13 @@ const BlogEditor = () => {
           draft: true,
         };
         console.log(blogObj);
+        const blogJson = JSON.stringify(blogObj);
+        console.log("Blog JSON",blogJson);
         axios
           .post(import.meta.env.VITE_SERVER_URL + "/create-blog", {...blogObj,id:blog_id}, {
+            withCredentials: true,
             headers: {
-              Authorization: `Bearer ${access_token}`,
+              contentType: "application/json",
             },
           })
           .then(() => {
