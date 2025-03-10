@@ -5,8 +5,7 @@ import { createAuth } from "thirdweb/auth";
 import { privateKeyToAccount } from "thirdweb/wallets";
 import { thirdwebClient } from "./thirdwebClient.js";
 import multer from "multer";
-import { ThirdwebStorage } from "@thirdweb-dev/storage";
-import { File } from "fetch-blob/file.js";
+import { uploadToIPFS, getIPFSUrl } from "./ipfsOps.js";
 
 
 
@@ -115,7 +114,7 @@ app.post("/upload-img-return-URL", upload.single("image"), async (req, res) => {
             console.log("Invalid JWT");
             return res.status(401).json({ success: 0, message: "Unauthorized" });
         }
-        
+
         // Step 2: Validate the image
         if (!req.file) {
             console.log("No file uploaded");
@@ -124,25 +123,33 @@ app.post("/upload-img-return-URL", upload.single("image"), async (req, res) => {
         const { buffer, originalname, mimetype } = req.file;
 
         // Step 3: Upload the image to IPFS using thirdweb
-        const storage = new ThirdwebStorage({
-            secretKey: thirdwebSecretKey,
-        });
+        // const storage = new ThirdwebStorage({
+        //     secretKey: thirdwebSecretKey,
+        // });
 
         // Method 1: Direct upload using the buffer
-        const ipfsUri = await storage.upload(buffer, {
+        // const ipfsUri = await storage.upload(buffer, {
+        //     name: originalname,
+        //     type: mimetype
+        // });
+
+        const ipfsUri = await uploadToIPFS(buffer, {
             name: originalname,
             type: mimetype
         });
-        
+
         // If Method 1 doesn't work, try Method 2
         // const blob = new Blob([buffer], { type: mimetype });
         // const file = new File([blob], originalname, { type: mimetype });
         // const ipfsUri = await storage.upload(file);
-        
+
         console.log("IPFS URI:", ipfsUri);
 
         // Resolve the IPFS URI to a public gateway URL.
-        const imageUrl = storage.resolveScheme(ipfsUri);
+        // const imageUrl = storage.resolveScheme(ipfsUri);
+        // console.log("Image URL:", imageUrl);
+
+        const imageUrl = await getIPFSUrl(ipfsUri);
         console.log("Image URL:", imageUrl);
 
         return res.status(200).json({
@@ -155,6 +162,89 @@ app.post("/upload-img-return-URL", upload.single("image"), async (req, res) => {
         return res.status(500).json({ success: 0, message: "Internal Server Error." });
     }
 });
+
+
+app.post("/create-blog", async (req, res) => {
+    try {
+        // Step 1: Authenticate the user
+        const jwt = req.cookies?.jwt;
+        if (!jwt) {
+            console.log("No JWT found in cookies");
+            return res.status(401).json({ success: 0, message: "Unauthorized" });
+        }
+        const authResult = await thirdwebAuth.verifyJWT({ jwt });
+        if (!authResult.valid) {
+            console.log("Invalid JWT");
+            return res.status(401).json({ success: 0, message: "Unauthorized" });
+        }
+
+        // Step 2: Validate the request body
+        if (!req.body) {
+            console.log("No blog JSON found in request body");
+            return res.status(400).json({ success: 0, message: "No file uploaded." });
+        }
+        const blogJSON = req.body;
+        console.log("Blog JSON:", blogJSON);
+        let { title, des, banner, tags, content, draft } = blogJSON
+
+        if (!title.length) {
+            return res
+                .status(403)
+                .json({ error: "You must provide a title to publish the blog" });
+        }
+        if (!draft) {
+            if (!title.length) {
+                return res
+                    .status(403)
+                    .json({ error: "You must provide a title to publish the blog" });
+            }
+            if (!des.length || des.length > 200) {
+                return res
+                    .status(403)
+                    .json({ error: "You must provide a desciption under 200 character." });
+            }
+            if (!banner.length) {
+                return res
+                    .status(403)
+                    .json({ error: "You must provide a banner to publish" });
+            }
+            if (!content.blocks?.length) {
+                return res.status(403).json({ error: "There must be some blog content" });
+            }
+            if (!tags.length || tags.length > 16) {
+                return res
+                    .status(403)
+                    .json({ error: "You must provide a tags under limit" });
+            }
+
+            blogJSON.tags = tags.map((tag) => tag.toLowerCase());
+        }
+        console.log(blogJSON)
+        // Step 3: If previously created blog, update it
+        
+        // Step 4: upload the blogJson to IPFS
+        const ipfsUri = await uploadToIPFS(JSON.stringify(blogJSON));
+        console.log("IPFS URI:", ipfsUri);
+
+        const blogUrl = await getIPFSUrl(ipfsUri);
+        console.log("Blog URL:", blogUrl);
+
+        // Download the blogJson from IPFS using the IPFS URI
+        // const data = await storage.downloadJSON(ipfsUri);
+        // console.log("IPFS Data:", data);
+
+        return res.status(200).json({
+            success: 1,
+            message: "Blog posted successfully.",
+        });
+
+    } catch (err) {
+        console.error("Error while creating blog:", err);
+        return res.status(500).json({ success: 0, message: "Internal Server Error." });
+    }
+})
+
+
 
 app.listen(port, () => {
     console.log(`⚡ Auth server listening on port ${port}....`);
