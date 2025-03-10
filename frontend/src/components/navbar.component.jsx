@@ -6,9 +6,10 @@ import { UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
 // import axios from "axios";
 import ConnectButtonAuth from "./web3Component/ConnectButtonAuth";
-import { getAvatar } from "../lib/contractInteraction";
+import { getAvatar, isRegisteredUser } from "../lib/contractInteraction";
 import { useActiveAccount } from 'thirdweb/react';
 import { useAuth } from "../contexts/AuthContext";
+import { use } from "react";
 
 const Navbar = () => {
   const [searchboxvisibility, setSearchboxvisibility] = useState(false);
@@ -18,11 +19,11 @@ const Navbar = () => {
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const [localAvatar, setLocalAvatar] = useState(null);  // NEW: Local state to track UI updates
 
-  const { isLoggedIn, avatarUrl, setAvatarUrl } = useAuth();
+  const { isLoggedIn, avatarUrl, setAvatarUrl, userAddress, setUserAddress } = useAuth();
   const address = useActiveAccount()?.address ?? "";
   // for debugging
   console.log("isLoggedIn:", isLoggedIn);
-  console.log("Wallet address:", address);
+  // console.log("Wallet address:", address);
 
   const handelSearch = (e) => {
     let query = e.target.value;
@@ -35,7 +36,7 @@ const Navbar = () => {
     setUserNavPanel((currentvalue) => !currentvalue);
   };
 
-  const fetchAvatarUrl = async () => {
+  const fetchAvatarUrl = async (address) => {
     console.log("Fetching avatar for address:", address);
     try {
       const avatarUrl = await getAvatar(address);
@@ -48,25 +49,34 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
-      setIsAvatarLoading(true);
-      console.log("Fetching avatar...");
+    if (isLoggedIn && address) {
+      setUserAddress(address); // Update global state
 
-      fetchAvatarUrl().then((avatarUrl) => {
+      setIsAvatarLoading(true);
+      console.log("Fetching avatar for:", address);
+
+      fetchAvatarUrl(address).then((avatarUrl) => {
         const finalAvatarUrl = avatarUrl || "https://api.dicebear.com/9.x/adventurer/svg?seed=default";
 
         setAvatarUrl(finalAvatarUrl);  // Update global state
-        setLocalAvatar(finalAvatarUrl); // Update local state to trigger re-render
+        setLocalAvatar(finalAvatarUrl); // Update local state
 
-        console.log("Final Avatar URL in state:", finalAvatarUrl);
+        console.log("Final Avatar URL:", finalAvatarUrl);
         setIsAvatarLoading(false);
       });
+      
+      isRegisteredUser(address).then((isRegistered) => {
+        console.log("isRegistered:", isRegistered);
+      })
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, address]); // Added `address` as a dependency
+
+  useEffect(() => {
+    console.log("Updated userAddress:", userAddress);
+  }, [userAddress]);
 
   console.log("isAvatarLoading state:", isAvatarLoading);
   console.log("Avatar URL before rendering:", localAvatar);  // Updated to use local state
-
 
   return (
     <>
