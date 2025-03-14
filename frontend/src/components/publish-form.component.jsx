@@ -7,8 +7,11 @@ import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
+import { useUploadBlog } from "../lib/contractInteraction";
+// import { }
 
 const PublishEditor = () => {
+  const uploadBlog = useUploadBlog();
   let { blog_id } = useParams()
   let characterLimit = 200;
   const tagLimit = 16;
@@ -93,13 +96,31 @@ const PublishEditor = () => {
           contentType: "application/json",
         },
       })
-      .then(() => {
+      .then(({ data }) => {
         e.target.classList.remove("disable");
-        toast.dismiss(loadingToast);
-        toast.success("done");
-        setTimeout(() => {
-          navigate("/dashboard/blogs");
-        }, 500);
+        // toast.dismiss(loadingToast);
+        // toast.success("done");
+
+        const { blogIdHash, blogUrl } = data;
+
+        console.log("Id and URL: ", blogIdHash, blogUrl);
+        if (blogIdHash && blogUrl) {
+          uploadBlog(blogUrl)
+            .then((transactionHash) => {
+              console.log("Transaction hash:", transactionHash);
+              toast.dismiss(loadingToast);
+              toast.success("Uploaded Successfully");
+              // navigate(`/blog/${blogIdHash}`);
+            })
+            .catch((error) => {
+              console.error("Upload failed", error);
+              toast.dismiss(loadingToast);
+              toast.error("Upload failed");
+            });
+        } else {
+          toast.dismiss(loadingToast);
+          toast.error("Missing blog data");
+        }
       })
       .catch(({ response }) => {
         e.target.classList.remove("disable");
