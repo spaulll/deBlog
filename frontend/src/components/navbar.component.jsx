@@ -6,10 +6,11 @@ import { UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
 // import axios from "axios";
 import ConnectButtonAuth from "./web3Component/ConnectButtonAuth";
-import { getAvatar, isRegisteredUser } from "../lib/contractInteraction";
-import { useActiveAccount } from 'thirdweb/react';
+import { getAvatar, isRegisteredUser, registerUser } from "../lib/contractInteraction";
+import { useActiveAccount,  } from 'thirdweb/react';
 import { useAuth } from "../contexts/AuthContext";
 import { use } from "react";
+import { toast, Toaster } from "react-hot-toast";
 
 const Navbar = () => {
   const [searchboxvisibility, setSearchboxvisibility] = useState(false);
@@ -21,6 +22,7 @@ const Navbar = () => {
 
   const { isLoggedIn, avatarUrl, setAvatarUrl, userAddress, setUserAddress } = useAuth();
   const address = useActiveAccount()?.address ?? "";
+  const account = useActiveAccount();
   // for debugging
   console.log("isLoggedIn:", isLoggedIn);
   // console.log("Wallet address:", address);
@@ -66,7 +68,14 @@ const Navbar = () => {
       });
       
       isRegisteredUser(address).then((isRegistered) => {
-        console.log("isRegistered:", isRegistered);
+        if(!isRegistered) {
+          let loadingToast = toast.loading("Registering User...");
+          const hash = registerUser(account);
+          console.log("hash:", hash);
+          toast.dismiss(loadingToast);
+          toast.success("Successfully Registered");
+          console.log("isRegistered:", isRegistered); 
+        }
       })
     }
   }, [isLoggedIn, address]); // Added `address` as a dependency
