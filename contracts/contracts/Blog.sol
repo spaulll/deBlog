@@ -17,7 +17,9 @@ contract Blog {
         string indexed username,
         uint32 postId, 
         string ipfsUri, 
-        uint32 timestamp
+        uint32 timestamp, 
+        string[] tags,
+        bytes32 blogIdHash
     );
     event PostEdited(
         address indexed userAddress, 
@@ -46,6 +48,8 @@ contract Blog {
         bool edited;
         bool draft;
         string content;
+        string[] tags;
+        bytes32 blogIdHash;
     }
 
     struct Comment {
@@ -65,8 +69,20 @@ contract Blog {
     // Like/dislike tracking.
     mapping(address => mapping(address => mapping(uint32 => bool))) public hasLiked;
     mapping(address => mapping(address => mapping(uint32 => bool))) public hasDisliked;
-    // Local per-user post counter.
+    // Per-user post counter.
     mapping(address => uint32) public userPostCount;
+    // Tag tracking.
+    mapping(bytes32 => bool) internal tagExists;
+    // Get blogIdHash by tag.
+    // key 1: tagHash
+    // key 2: blogIdHash
+    mapping(bytes32 => bytes32[]) public blogIdHashesByTag;
+    // Get postId by blogIdHash.
+    // key 1: blogIdHash
+    // key 2: postId
+    mapping(bytes32 => uint32) public postIdsByBlogIdHash;
+    // Mapping to track the owner of each post by its blogIdHash.
+    mapping(bytes32 => address) internal postOwner;
 
     // *************************
     // *** Modifiers         ***
@@ -97,7 +113,7 @@ contract Blog {
 
     /// @notice Create a new blog post.
     /// @param _ipfsUri URI where the post content is stored.
-    function createPost(string calldata _ipfsUri) external onlyRegistered {
+    function createPost(string calldata _ipfsUri, string[] calldata _tags, bytes32 _blogIdHash) external onlyRegistered {
         require(bytes(_ipfsUri).length > 0, "Content cannot be empty");
 
         // Fetch the user's profile to get their username.
@@ -107,6 +123,18 @@ contract Blog {
         // Use local counter for postId.
         uint32 postId = userPostCount[msg.sender];
         userPostCount[msg.sender] = postId + 1;
+        // Assign the postId to the blogIdHash.
+        postIdsByBlogIdHash[_blogIdHash] = postId;
+
+        // Assign the blogIdHash to each tags.
+        for (uint256 i = 0; i < _tags.length; i++) {
+            // string memory tag = _tags[i];
+            bytes32 tagHash = keccak256(abi.encodePacked(_tags[i]));
+            blogIdHashesByTag[tagHash].push(_blogIdHash);
+        }
+
+        // Track the owner of this post.
+        postOwner[_blogIdHash] = msg.sender;
 
         // Create the post.
         userPosts[msg.sender][postId] = Post({
@@ -117,10 +145,12 @@ contract Blog {
             commentCount: 0,
             edited: false,
             draft: false,
-            content: _ipfsUri
+            content: _ipfsUri,
+            tags: _tags,
+            blogIdHash: _blogIdHash
         });
 
-        emit PostCreated(msg.sender, user.username, postId, _ipfsUri, uint32(block.timestamp));
+        emit PostCreated(msg.sender, user.username, postId, _ipfsUri, uint32(block.timestamp), _tags, _blogIdHash);
     }
 
     /// @notice Edit an existing post.
@@ -170,11 +200,31 @@ contract Blog {
         emit PostReacted(msg.sender, _userAddress, postIndex, like, post.likes, post.dislikes);
     }
 
+    /// @notice Search for posts by tag.
+    /// @param _tag The tag to search for.
+    /// @return posts An array of posts that match the given tag.
+    function searchPostsByTag(string calldata _tag) external view returns (Post[] memory posts) {
+        // Convert the tag to its bytes32 hash.
+        bytes32 tagHash = keccak256(abi.encodePacked(_tag));
+        // Get all blogIdHashes associated with this tag.
+        bytes32[] storage blogIds = blogIdHashesByTag[tagHash];
+        uint256 length = blogIds.length;
+        posts = new Post[](length);
+        // Iterate over each blogIdHash and fetch the corresponding post.
+        for (uint256 i = 0; i < length; i++) {
+            bytes32 blogId = blogIds[i];
+            address owner = postOwner[blogId];
+            uint32 postId = postIdsByBlogIdHash[blogId];
+            posts[i] = userPosts[owner][postId];
+        }
+    }
+
     /// @notice Retrieve a published post.
     /// @param _userAddress The address of the post owner.
-    /// @param postIndex The ID of the post.
+    /// @param _blogIdHash The ID of the post.
     /// @return post The Post struct.
-    function getPost(address _userAddress, uint32 postIndex) external view returns (Post memory post) {
+    function getPost(address _userAddress, bytes32 _blogIdHash) external view returns (Post memory post) {
+        uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
         require(userPosts[_userAddress][postIndex].draft == false, "Draft posts cannot be fetched");
         require(bytes(userPosts[_userAddress][postIndex].content).length > 0, "Post does not exist");
         post = userPosts[_userAddress][postIndex];
