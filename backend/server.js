@@ -6,8 +6,8 @@ import { privateKeyToAccount } from "thirdweb/wallets";
 import { thirdwebClient } from "./thirdwebClient.js";
 import multer from "multer";
 import { uploadToIPFS, getIPFSUrl } from "./ipfsOps.js";
-
-
+import { keccak256 } from "thirdweb/utils"
+import { nanoid } from "nanoid";
 
 const privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) throw new Error("PRIVATE_KEY is not defined");
@@ -219,9 +219,21 @@ app.post("/create-blog", async (req, res) => {
 
             blogJSON.tags = tags.map((tag) => tag.toLowerCase());
         }
+        const blog_id =
+            title
+                .replace(/[^a-zA-Z0-9]/g, " ")
+                .replace(/\s+/g, "-")
+                .trim() + nanoid();
+
+        console.log("Blog ID:", blog_id);
+        const blogIdHash = keccak256(blog_id);
+        console.log("Blog ID Hash:", blogIdHash);
+
+        blogJSON.blog_id = blogIdHash;
+        
         console.log(blogJSON)
         // Step 3: If previously created blog, update it
-        
+
         // Step 4: upload the blogJson to IPFS
         const ipfsUri = await uploadToIPFS(JSON.stringify(blogJSON));
         console.log("IPFS URI:", ipfsUri);
@@ -235,7 +247,9 @@ app.post("/create-blog", async (req, res) => {
 
         return res.status(200).json({
             success: 1,
-            message: "Blog posted successfully.",
+            message: "Blog is ready to be published.",
+            blogUrl,
+            blogIdHash                
         });
 
     } catch (err) {
@@ -244,7 +258,9 @@ app.post("/create-blog", async (req, res) => {
     }
 })
 
-
+app.post("/get-blog", async (req, res) => {
+    
+})
 
 app.listen(port, () => {
     console.log(`⚡ Auth server listening on port ${port}....`);
