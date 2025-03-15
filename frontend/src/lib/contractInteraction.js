@@ -83,7 +83,7 @@ const isRegisteredUser = async (address) => {
 // Comment this if you want to use thirdweb smartwallet to upload blog gaslessly
 const useUploadBlog = () => {
     const account = useActiveAccount();
-    const uploadBlog = async (ipfsUri) => {
+    const uploadBlog = async (ipfsUri, tags, blogIdHash) => {
         console.log("uploadBlog() called:", ipfsUri);
         if (!account) throw new Error("No connected account");
     
@@ -91,7 +91,7 @@ const useUploadBlog = () => {
           const transaction = prepareContractCall({
             contract: BlogContract,
             method: "createPost",
-            params: [ipfsUri],
+            params: [ipfsUri, tags, blogIdHash],
           });
 
           const receipt = await sendAndConfirmTransaction({
@@ -129,4 +129,19 @@ const registerUser = async (account) => {
     }
 };
 
-export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, registerUser };
+const getBlog = async (blogIdHash) => {
+    if (!blogIdHash) throw new Error("Something went wrong");
+    try {
+        const blog = await readContract({
+            contract: BlogContract,
+            method: "getPost",
+            params: [blogIdHash],
+        });
+        return blog;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, registerUser, getBlog };
