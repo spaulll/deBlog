@@ -74,15 +74,12 @@ contract Blog {
     // Tag tracking.
     mapping(bytes32 => bool) internal tagExists;
     // Get blogIdHash by tag.
-    // key 1: tagHash
-    // key 2: blogIdHash
+    // key 1: tagHash, key 2: blogIdHash[]
     mapping(bytes32 => bytes32[]) public blogIdHashesByTag;
     // Get postId by blogIdHash.
-    // key 1: blogIdHash
-    // key 2: postId
     mapping(bytes32 => uint32) public postIdsByBlogIdHash;
     // Mapping to track the owner of each post by its blogIdHash.
-    mapping(bytes32 => address) internal postOwner;
+    mapping(bytes32 => address) public postOwner;
 
     // *************************
     // *** Modifiers         ***
@@ -92,19 +89,13 @@ contract Blog {
         _;
     }
 
-    modifier onlyCommentOwner(address _postOwner, uint32 _postIndex, uint32 _commentId) {
-        Comment storage comment = postComments[_postOwner][_postIndex][_commentId];
-        require(comment.commenter == msg.sender, "You are not the owner of this comment");
-        _;
-    }
-
     // *************************
     // *** Constructor       ***
     // *************************
     /// @notice Link the blog with the deployed UserProfile contract.
-    /// @param _userProfileAddress The address of the UserProfile contract.
-    constructor(address _userProfileAddress) {
-        userProfile = UserProfile(_userProfileAddress);
+    /// @param _userProfileContractAddress The address of the UserProfile contract.
+    constructor(address _userProfileContractAddress) {
+        userProfile = UserProfile(_userProfileContractAddress);
     }
 
     // *************************
@@ -113,6 +104,8 @@ contract Blog {
 
     /// @notice Create a new blog post.
     /// @param _ipfsUri URI where the post content is stored.
+    /// @param _tags Tags for the post.
+    /// @param _blogIdHash Unique identifier for the post.
     function createPost(string calldata _ipfsUri, string[] calldata _tags, bytes32 _blogIdHash) external onlyRegistered {
         require(bytes(_ipfsUri).length > 0, "Content cannot be empty");
 
@@ -126,9 +119,8 @@ contract Blog {
         // Assign the postId to the blogIdHash.
         postIdsByBlogIdHash[_blogIdHash] = postId;
 
-        // Assign the blogIdHash to each tags.
+        // Assign the blogIdHash to each tag.
         for (uint256 i = 0; i < _tags.length; i++) {
-            // string memory tag = _tags[i];
             bytes32 tagHash = keccak256(abi.encodePacked(_tags[i]));
             blogIdHashesByTag[tagHash].push(_blogIdHash);
         }
@@ -153,11 +145,14 @@ contract Blog {
         emit PostCreated(msg.sender, user.username, postId, _ipfsUri, uint32(block.timestamp), _tags, _blogIdHash);
     }
 
-    /// @notice Edit an existing post.
-    /// @param postIndex The ID of the post.
+    /// @notice Edit an existing post using its blogIdHash.
+    /// @param _blogIdHash The unique identifier for the post.
     /// @param _newContent The new content for the post.
-    function editPost(uint32 postIndex, string calldata _newContent) external onlyRegistered {
-        Post storage post = userPosts[msg.sender][postIndex];
+    function editPost(bytes32 _blogIdHash, string calldata _newContent) external onlyRegistered {
+        address owner = postOwner[_blogIdHash];
+        require(owner == msg.sender, "Only post owner can edit");
+        uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
+        Post storage post = userPosts[owner][postIndex];
         require(bytes(post.content).length > 0, "Post does not exist");
 
         post.content = _newContent;
@@ -167,82 +162,65 @@ contract Blog {
         emit PostEdited(msg.sender, postIndex, _newContent, uint32(block.timestamp));
     }
 
-    /// @notice Like or dislike a post.
-    /// @param _userAddress The address of the post owner.
-    /// @param postIndex The ID of the post.
+    /// @notice Like or dislike a post using its blogIdHash.
+    /// @param _blogIdHash The unique identifier for the post.
     /// @param like True to like the post, false to dislike.
-    function toggleLikeDislike(address _userAddress, uint32 postIndex, bool like) external onlyRegistered {
-        require(bytes(userPosts[_userAddress][postIndex].content).length > 0, "Post does not exist");
+    function toggleLikeDislike(bytes32 _blogIdHash, bool like) external onlyRegistered {
+        address owner = postOwner[_blogIdHash];
+        uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
+        require(bytes(userPosts[owner][postIndex].content).length > 0, "Post does not exist");
 
-        bool alreadyLiked = hasLiked[msg.sender][_userAddress][postIndex];
-        bool alreadyDisliked = hasDisliked[msg.sender][_userAddress][postIndex];
+        bool alreadyLiked = hasLiked[msg.sender][owner][postIndex];
+        bool alreadyDisliked = hasDisliked[msg.sender][owner][postIndex];
 
         require(!(alreadyLiked && like) && !(alreadyDisliked && !like), "Action already performed");
 
-        Post storage post = userPosts[_userAddress][postIndex];
+        Post storage post = userPosts[owner][postIndex];
 
         if (like) {
             if (alreadyDisliked) {
                 unchecked { post.dislikes -= 1; }
-                hasDisliked[msg.sender][_userAddress][postIndex] = false;
+                hasDisliked[msg.sender][owner][postIndex] = false;
             }
             post.likes += 1;
-            hasLiked[msg.sender][_userAddress][postIndex] = true;
+            hasLiked[msg.sender][owner][postIndex] = true;
         } else {
             if (alreadyLiked) {
                 unchecked { post.likes -= 1; }
-                hasLiked[msg.sender][_userAddress][postIndex] = false;
+                hasLiked[msg.sender][owner][postIndex] = false;
             }
             post.dislikes += 1;
-            hasDisliked[msg.sender][_userAddress][postIndex] = true;
+            hasDisliked[msg.sender][owner][postIndex] = true;
         }
 
-        emit PostReacted(msg.sender, _userAddress, postIndex, like, post.likes, post.dislikes);
+        emit PostReacted(msg.sender, owner, postIndex, like, post.likes, post.dislikes);
     }
 
-    /// @notice Search for posts by tag.
-    /// @param _tag The tag to search for.
-    /// @return posts An array of posts that match the given tag.
-    function searchPostsByTag(string calldata _tag) external view returns (Post[] memory posts) {
-        // Convert the tag to its bytes32 hash.
-        bytes32 tagHash = keccak256(abi.encodePacked(_tag));
-        // Get all blogIdHashes associated with this tag.
-        bytes32[] storage blogIds = blogIdHashesByTag[tagHash];
-        uint256 length = blogIds.length;
-        posts = new Post[](length);
-        // Iterate over each blogIdHash and fetch the corresponding post.
-        for (uint256 i = 0; i < length; i++) {
-            bytes32 blogId = blogIds[i];
-            address owner = postOwner[blogId];
-            uint32 postId = postIdsByBlogIdHash[blogId];
-            posts[i] = userPosts[owner][postId];
-        }
-    }
-
-    /// @notice Retrieve a published post.
-    /// @param _userAddress The address of the post owner.
-    /// @param _blogIdHash The ID of the post.
+    /// @notice Retrieve a published post by its blogIdHash.
+    /// @param _blogIdHash The unique identifier for the post.
     /// @return post The Post struct.
-    function getPost(address _userAddress, bytes32 _blogIdHash) external view returns (Post memory post) {
+    function getPost(bytes32 _blogIdHash) external view returns (Post memory post) {
+        address owner = postOwner[_blogIdHash];
         uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
-        require(userPosts[_userAddress][postIndex].draft == false, "Draft posts cannot be fetched");
-        require(bytes(userPosts[_userAddress][postIndex].content).length > 0, "Post does not exist");
-        post = userPosts[_userAddress][postIndex];
+        require(userPosts[owner][postIndex].draft == false, "Draft posts cannot be fetched");
+        require(bytes(userPosts[owner][postIndex].content).length > 0, "Post does not exist");
+        post = userPosts[owner][postIndex];
     }
 
-    /// @notice Add a comment to a post.
-    /// @param _postOwner The address of the post owner.
-    /// @param _postIndex The ID of the post.
+    /// @notice Add a comment to a post using its blogIdHash.
+    /// @param _blogIdHash The unique identifier for the post.
     /// @param _content The comment text.
     /// @return commentId The new comment's ID.
-    function addComment(address _postOwner, uint32 _postIndex, string calldata _content) external onlyRegistered returns (uint32 commentId) {
+    function addComment(bytes32 _blogIdHash, string calldata _content) external onlyRegistered returns (uint32 commentId) {
         require(bytes(_content).length > 0, "Content cannot be empty");
-        require(bytes(userPosts[_postOwner][_postIndex].content).length > 0, "Post does not exist");
+        address owner = postOwner[_blogIdHash];
+        uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
+        require(bytes(userPosts[owner][postIndex].content).length > 0, "Post does not exist");
 
-        Post storage post = userPosts[_postOwner][_postIndex];
+        Post storage post = userPosts[owner][postIndex];
         commentId = post.commentCount;
 
-        postComments[_postOwner][_postIndex][commentId] = Comment({
+        postComments[owner][postIndex][commentId] = Comment({
             commentId: commentId,
             timestamp: uint32(block.timestamp),
             commenter: msg.sender,
@@ -252,40 +230,35 @@ contract Blog {
         post.commentCount += 1;
     }
 
-    /// @notice Edit an existing comment.
-    /// @param _postOwner The address of the post owner.
-    /// @param _postIndex The ID of the post.
+    /// @notice Edit an existing comment on a post using its blogIdHash.
+    /// @param _blogIdHash The unique identifier for the post.
     /// @param _commentId The ID of the comment.
     /// @param _newContent The new comment text.
-    function editComment(
-        address _postOwner, 
-        uint32 _postIndex, 
-        uint32 _commentId, 
-        string calldata _newContent
-    )
-        external
-        onlyCommentOwner(_postOwner, _postIndex, _commentId)
-    {
-        require(bytes(userPosts[_postOwner][_postIndex].content).length > 0, "Post does not exist");
-        require(bytes(postComments[_postOwner][_postIndex][_commentId].content).length > 0, "Comment does not exist");
+    function editComment(bytes32 _blogIdHash, uint32 _commentId, string calldata _newContent) external {
+        address owner = postOwner[_blogIdHash];
+        uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
+        Comment storage comment = postComments[owner][postIndex][_commentId];
+        require(comment.commenter == msg.sender, "You are not the owner of this comment");
+        require(bytes(userPosts[owner][postIndex].content).length > 0, "Post does not exist");
+        require(bytes(comment.content).length > 0, "Comment does not exist");
 
-        Comment storage commentToEdit = postComments[_postOwner][_postIndex][_commentId];
-        commentToEdit.content = _newContent;
-        commentToEdit.timestamp = uint32(block.timestamp);
+        comment.content = _newContent;
+        comment.timestamp = uint32(block.timestamp);
     }
 
-    /// @notice Retrieve all comments on a post.
-    /// @param _postOwner The address of the post owner.
-    /// @param _postIndex The ID of the post.
+    /// @notice Retrieve all comments on a post using its blogIdHash.
+    /// @param _blogIdHash The unique identifier for the post.
     /// @return comments An array of Comment structs.
-    function getComments(address _postOwner, uint32 _postIndex) external view returns (Comment[] memory comments) {
-        require(bytes(userPosts[_postOwner][_postIndex].content).length > 0, "Post does not exist");
+    function getComments(bytes32 _blogIdHash) external view returns (Comment[] memory comments) {
+        address owner = postOwner[_blogIdHash];
+        uint32 postIndex = postIdsByBlogIdHash[_blogIdHash];
+        require(bytes(userPosts[owner][postIndex].content).length > 0, "Post does not exist");
 
-        uint32 count = userPosts[_postOwner][_postIndex].commentCount;
+        uint32 count = userPosts[owner][postIndex].commentCount;
         comments = new Comment[](count);
 
         for (uint32 i = 0; i < count; i++) {
-            comments[i] = postComments[_postOwner][_postIndex][i];
+            comments[i] = postComments[owner][postIndex][i];
         }
     }
 }
