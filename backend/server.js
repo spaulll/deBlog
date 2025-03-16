@@ -249,7 +249,8 @@ app.post("/create-blog", async (req, res) => {
             success: 1,
             message: "Blog is ready to be published.",
             blogUrl,
-            blogIdHash                
+            blogIdHash,
+            blogJSON                
         });
 
     } catch (err) {
