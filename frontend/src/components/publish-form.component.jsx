@@ -101,16 +101,17 @@ const PublishEditor = () => {
         // toast.dismiss(loadingToast);
         // toast.success("done");
 
-        const { blogIdHash, blogUrl } = data;
-
+        const { blogUrl, blogIdHash, blogJSON } = data;
+        const tags = blogJSON.tags;
         console.log("Id and URL: ", blogIdHash, blogUrl);
         if (blogIdHash && blogUrl) {
-          uploadBlog(blogUrl)
+          uploadBlog(blogUrl, tags, blogIdHash)
             .then((transactionHash) => {
               console.log("Transaction hash:", transactionHash);
               toast.dismiss(loadingToast);
               toast.success("Uploaded Successfully");
-              // navigate(`/blog/${blogIdHash}`);
+              const blog_id = blogIdHash;
+              navigate(`/blog/${blog_id}`);
             })
             .catch((error) => {
               console.error("Upload failed", error);
