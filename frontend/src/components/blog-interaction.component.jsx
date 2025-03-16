@@ -1,106 +1,70 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Heart, MessageSquare, TwitterIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../App";
 import toast, { Toaster } from "react-hot-toast";
-import axios from "axios";
+import { likePost, isPostLikedByUser } from "../lib/contractInteraction";
+// import d from "./comments.component";
+import { useActiveAccount } from "thirdweb/react";
 
 const BlogInteraction = () => {
-  let {
+  const {
     blogData,
-    blogData: {
-      _id,
-      title,
-      blog_id,
-      activity,
-      activity: { total_likes, total_comments },
-      author: {
-        personal_info: { username: author_username },
-      },
-    },
     setBlogData,
     isLikedByUser,
     setIsLikedByUser,
-    setCommentsWrapper,
+    // setCommentsWrapper,
   } = useContext(BlogContext);
 
-  let {
-    userAuth: { username, access_token },
-  } = useContext(UserContext);
+  const account = useActiveAccount();
+  const address = useActiveAccount()?.address;
+  console.log("address at BlogInteraction", address);
 
   useEffect(() => {
-    if (access_token) {
-      axios
-        .post(
-          import.meta.env.VITE_SERVER_URL + "/isliked-by-user",
-          {
-            _id,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          }
-        )
-        .then(({ data }) => {
-          // Server returns {results: true/false}
-          setIsLikedByUser(Boolean(data.results));
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    if (address && blogData) {
+      checkIfUserLiked();
     }
-  }, []);
+  }, [address, blogData]);
 
-  const handelLike = () => {
-    if (access_token) {
-      // Create temporary variables for optimistic update
-      const newIsLiked = !isLikedByUser;
-      const newTotalLikes = newIsLiked ? total_likes + 1 : total_likes - 1;
+  const checkIfUserLiked = async () => {
+    try {
+      if (!blogData || !blogData.blog_id) return;
+      const liked = await isPostLikedByUser(blogData.blog_id, address);
+      setIsLikedByUser(liked);
+    } catch (error) {
+      console.error("Error checking like status:", error);
+    }
+  };
 
-      // First update UI optimistically
-      setIsLikedByUser(newIsLiked);
-      setBlogData({
-        ...blogData,
-        activity: {
-          ...activity,
-          total_likes: newTotalLikes,
-        },
-      });
-
-      // Then make the API call
-      axios
-        .post(
-          import.meta.env.VITE_SERVER_URL + "/like-blog",
-          {
-            _id,
-            isLikedByUser: !newIsLiked, // Send the previous state
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          }
-        )
-        .then(({ data }) => {
-          // Only needed if you want to verify the server state
-          console.log(data);
-        })
-        .catch((err) => {
-          // Revert changes if the API call fails
-          setIsLikedByUser(!newIsLiked);
-          setBlogData({
-            ...blogData,
-            activity: {
-              ...activity,
-              total_likes: total_likes,
-            },
-          });
-          toast.error("Failed to update like status");
-        });
-    } else {
-      toast.error("please do log in");
+  const handleLike = async () => {
+    if (!address) {
+      toast.error("Please connect your wallet to like the post.");
+      return;
+    }
+    if (!blogData || !blogData.blog_id) {
+      toast.error("Blog data is not available.");
+      return;
+    }
+    if (isLikedByUser) {
+      toast.error("You have already liked this post.");
+      return;
+    }
+    try {
+      const hash = await likePost(blogData.blog_id, account);
+      if (!hash) {
+        // toast.error("Failed to like the post.");
+        throw new Error("Failed to like the post.");
+      };
+      setIsLikedByUser(true);
+      toast.success("Post liked successfully.");
+      setBlogData((prev) => ({
+        ...prev,
+        likes: prev.likes + 1,
+      }));
+    } catch (error) {
+      console.error("Error liking post:", error);
+      toast.error("Failed to like the post.");
     }
   };
 
@@ -112,9 +76,9 @@ const BlogInteraction = () => {
         <div className="flex gap-3 items-center">
           <button
             className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              isLikedByUser ? "bg-[#efbebe]" : "bg-grey/80"
+              isLikedByUser ? "bg-red-200" : "bg-grey/80"
             }`}
-            onClick={handelLike}
+            onClick={handleLike}
           >
             {isLikedByUser ? (
               <Heart color="#c01111" className="fill-[#c01111]" />
@@ -122,27 +86,19 @@ const BlogInteraction = () => {
               <Heart />
             )}
           </button>
-          <p className="text-dark-grey text-xl">{total_likes}</p>
+          <p className="text-dark-grey text-xl">{blogData?.likes || 0}</p>
 
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
-            onClick={() => setCommentsWrapper(preVal => !preVal)}
+            // onClick={() => setCommentsWrapper((prev) => !prev)}
           >
             <MessageSquare />
           </button>
-          <p className="text-dark-grey text-xl">{total_comments}</p>
+          {/* <p className="text-dark-grey text-xl">{blogData?.commentCount || 0}</p> */}
         </div>
         <div className="flex gap-6 items-center">
-          {username === author_username && (
-            <Link
-              to={`/editor/${blog_id}`}
-              className="undeline hover:text-purple"
-            >
-              Edit
-            </Link>
-          )}
           <Link
-            to={`https://twitter.com/intend/tweet?${title}&url=${location.href}`}
+            to={`https://twitter.com/intent/tweet?text=${blogData?.title || "Check this out!"}&url=${window.location.href}`}
           >
             <TwitterIcon className="hover:text-twitter" />
           </Link>

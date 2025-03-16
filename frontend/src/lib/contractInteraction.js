@@ -144,4 +144,58 @@ const getBlog = async (blogIdHash) => {
     }
 }
 
-export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, registerUser, getBlog };
+const likePost = async (blogIdHash, account) => {
+    if (!account) throw new Error("No connected account");
+    if (!blogIdHash) throw new Error("Something went wrong");
+    try {
+        const transaction = prepareContractCall({
+            contract: BlogContract,
+            method: "toggleLikeDislike",
+            params: [blogIdHash, true],
+        });
+        const receipt = await sendAndConfirmTransaction({ transaction, account });
+        return receipt.transactionHash;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+const isPostLikedByUser = async (blogIdHash, address) => {
+    try {
+        if (!blogIdHash || !address) throw new Error("Invalid parameters");
+
+        // Fetch blogId using blogIdHash
+        const blogId = await readContract({
+            contract: BlogContract,
+            method: "postIdsByBlogIdHash",
+            params: [blogIdHash],
+        });
+
+        if (!blogId) throw new Error("Failed to fetch blogId");
+
+        // Fetch post owner using blogIdHash
+        const postOwner = await readContract({
+            contract: BlogContract,
+            method: "postOwner",
+            params: [blogIdHash],
+        });
+
+        if (!postOwner) throw new Error("Failed to fetch post owner");
+
+        // Fetch hasLiked status using address, postOwner, and blogId
+        const hasLiked = await readContract({
+            contract: BlogContract,
+            method: "hasLiked",
+            params: [address, postOwner, blogId],
+        });
+
+        return hasLiked;
+    } catch (error) {
+        console.error("Error in isPostLikedByUser:", error.message);
+        return false; // Return false in case of an error
+    }
+};
+
+
+export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, registerUser, getBlog, likePost, isPostLikedByUser };
