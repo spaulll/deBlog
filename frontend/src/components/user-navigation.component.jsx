@@ -63,7 +63,9 @@ const UserNavigationPanel = ({ setUserNavPanel }) => {
         
         {/* Logout and Wallet info modal */}
         <Logout/>   
-        <WalletInfo/>
+        <div className=" pl-6 pb-2">
+        <WalletInfo />
+        </div>
         
       </div>
     </AnimatePresence>

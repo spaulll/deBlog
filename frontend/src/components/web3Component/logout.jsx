@@ -22,7 +22,7 @@ function WalletInfo() {
         return null;
     }
     return (
-        <ConnectButton client={client} theme={"light"}/>
+        <ConnectButton client={client} theme={"light"} connectButton={{ style: { border: "none" } }} detailsButton={{ style: { border: "none" } }} />
     );
 }
 
