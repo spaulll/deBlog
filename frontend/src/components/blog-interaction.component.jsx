@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { likePost, isPostLikedByUser } from "../lib/contractInteraction";
 // import d from "./comments.component";
 import { useActiveAccount } from "thirdweb/react";
+import { LoadingOverlay } from "./register.modal-component";
 
 const BlogInteraction = () => {
   const {
@@ -16,6 +17,7 @@ const BlogInteraction = () => {
     setIsLikedByUser,
     // setCommentsWrapper,
   } = useContext(BlogContext);
+  const [hadelLoading, setHandelLoading] = useState(false)
 
   const account = useActiveAccount();
   const address = useActiveAccount()?.address;
@@ -51,6 +53,7 @@ const BlogInteraction = () => {
       return;
     }
     try {
+      setHandelLoading(true)
       const hash = await likePost(blogData.blog_id, account);
       if (!hash) {
         // toast.error("Failed to like the post.");
@@ -58,6 +61,7 @@ const BlogInteraction = () => {
       };
       setIsLikedByUser(true);
       toast.success("Post liked successfully.");
+      setHandelLoading(false)
       setBlogData((prev) => ({
         ...prev,
         likes: prev.likes + 1,
@@ -65,6 +69,7 @@ const BlogInteraction = () => {
     } catch (error) {
       console.error("Error liking post:", error);
       toast.error("Failed to like the post.");
+      setHandelLoading(false)
     }
   };
 
@@ -105,6 +110,7 @@ const BlogInteraction = () => {
         </div>
       </div>
       <hr className="border-grey my-3" />
+      {hadelLoading ? <LoadingOverlay isLoading={hadelLoading} text="wait Like is initiateing..." />: ""}
     </>
   );
 };

@@ -6,21 +6,30 @@ import { UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
 // import axios from "axios";
 import ConnectButtonAuth from "./web3Component/ConnectButtonAuth";
-import { getAvatar, isRegisteredUser, registerUser } from "../lib/contractInteraction";
-import { useActiveAccount,  } from 'thirdweb/react';
+import {
+  getAvatar,
+  isRegisteredUser,
+  registerUser,
+} from "../lib/contractInteraction";
+import { useActiveAccount } from "thirdweb/react";
 import { useAuth } from "../contexts/AuthContext";
 import { use } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import { ErrorModal, LoadingOverlay, SuccessModal } from "./register.modal-component";
 
 const Navbar = () => {
   const [searchboxvisibility, setSearchboxvisibility] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const[isErrorModelopen, setIsErrorModelopen] = useState(false)
   let navigate = useNavigate();
 
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
-  const [localAvatar, setLocalAvatar] = useState(null);  // NEW: Local state to track UI updates
+  const [localAvatar, setLocalAvatar] = useState(null); // NEW: Local state to track UI updates
 
-  const { isLoggedIn, avatarUrl, setAvatarUrl, userAddress, setUserAddress } = useAuth();
+  const { isLoggedIn, avatarUrl, setAvatarUrl, userAddress, setUserAddress } =
+    useAuth();
   const address = useActiveAccount()?.address ?? "";
   const account = useActiveAccount();
   // for debugging
@@ -31,9 +40,8 @@ const Navbar = () => {
     let query = e.target.value;
     if (e.keyCode == 13 && query.length) {
       navigate(`/search/${query}`);
-
     }
-  }
+  };
   const handeluserNavPanel = () => {
     setUserNavPanel((currentvalue) => !currentvalue);
   };
@@ -49,7 +57,28 @@ const Navbar = () => {
       return null;
     }
   };
-
+  const hadleRegister = async () => {
+    try {
+      toast.error("You are not Registered");
+      let loadingToast = toast.loading("Registering user ...");
+      const hash = await registerUser(account);
+      setIsLoading(false)
+      // toast.dismiss(loadingToast);
+      if (hash) {
+        toast.dismiss(loadingToast);
+        toast("Successfully registered", { icon: "👌" });
+        setIsModalOpen(true)
+        console.log("Hash:", hash);
+        // console.log("isRegistered:", isRegistered);
+      }
+    } catch (error) {
+      console.log("Some error occurred.", error);
+      toast.dismiss(loadingToast);
+      toast.error("Failed to register!");
+      setIsLoading(false)
+      setIsErrorModelopen(true)
+    }
+  };
   useEffect(() => {
     if (isLoggedIn && address) {
       setUserAddress(address); // Update global state
@@ -58,25 +87,29 @@ const Navbar = () => {
       console.log("Fetching avatar for:", address);
 
       fetchAvatarUrl(address).then((avatarUrl) => {
-        const finalAvatarUrl = avatarUrl || "https://api.dicebear.com/9.x/adventurer/svg?seed=default";
+        const finalAvatarUrl =
+          avatarUrl ||
+          "https://api.dicebear.com/9.x/adventurer/svg?seed=default";
 
-        setAvatarUrl(finalAvatarUrl);  // Update global state
+        setAvatarUrl(finalAvatarUrl); // Update global state
         setLocalAvatar(finalAvatarUrl); // Update local state
 
         console.log("Final Avatar URL:", finalAvatarUrl);
         setIsAvatarLoading(false);
       });
-      
+
       isRegisteredUser(address).then((isRegistered) => {
-        if(!isRegistered) {
-          let loadingToast = toast.loading("Registering User...");
-          const hash = registerUser(account);
-          console.log("hash:", hash);
+        let loadingToast = toast.loading("loading profile...");
+        setIsLoading(true)
+        if (!isRegistered) {
           toast.dismiss(loadingToast);
-          toast.success("Successfully Registered");
-          console.log("isRegistered:", isRegistered); 
+          hadleRegister();
+        } else if (isRegistered) {
+          toast.dismiss(loadingToast);
+          toast("Welcome Back to deBlog!", { icon: "😀" });
+          setIsLoading(false)
         }
-      })
+      });
     }
   }, [isLoggedIn, address]); // Added `address` as a dependency
 
@@ -85,10 +118,11 @@ const Navbar = () => {
   }, [userAddress]);
 
   console.log("isAvatarLoading state:", isAvatarLoading);
-  console.log("Avatar URL before rendering:", localAvatar);  // Updated to use local state
+  console.log("Avatar URL before rendering:", localAvatar); // Updated to use local state
 
   return (
     <>
+      <Toaster />
       <nav className="navbar z-50">
         <Link to="/" className="flex-none w-11 md:w-16">
           <img src={logo} className="w-full rounded-2xl" alt="Logo" />
@@ -117,7 +151,9 @@ const Navbar = () => {
         <div className="flex items-center gap-3 md:gap-6 ml-auto">
           <button
             className="md:hidden bg-grey w-12 h-12 rounded-full flex items-center justify-center"
-            onClick={() => setSearchboxvisibility((currentvalue) => !currentvalue)}
+            onClick={() =>
+              setSearchboxvisibility((currentvalue) => !currentvalue)
+            }
           >
             <Search className="absolute text-xl" />
           </button>
@@ -144,20 +180,30 @@ const Navbar = () => {
               </Link> */}
 
               <div className="relative">
-                <button className="w-12 h-12 mt-1" onClick={() => setUserNavPanel((prev) => !prev)}>
+                <button
+                  className="w-12 h-12 mt-1"
+                  onClick={() => setUserNavPanel((prev) => !prev)}
+                >
                   {isAvatarLoading || !localAvatar ? (
-                    <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>  // Show loading
+                    <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div> // Show loading
                   ) : (
                     <img
                       src={localAvatar}
                       className="w-full h-full rounded-full object-cover"
                       alt="User Avatar"
-                      onError={(e) => (e.target.src = "https://api.dicebear.com/9.x/adventurer/svg?seed=default")}
+                      onError={(e) =>
+                        (e.target.src =
+                          "https://api.dicebear.com/9.x/adventurer/svg?seed=default")
+                      }
                     />
                   )}
                 </button>
               </div>
-              {userNavPanel ? <UserNavigationPanel setUserNavPanel={setUserNavPanel} /> : ""}
+              {userNavPanel ? (
+                <UserNavigationPanel setUserNavPanel={setUserNavPanel} />
+              ) : (
+                ""
+              )}
             </>
           ) : (
             <ConnectButtonAuth />
@@ -165,6 +211,16 @@ const Navbar = () => {
         </div>
       </nav>
       <Outlet />
+      {
+        isLoading? <LoadingOverlay isLoading={isLoading} text="Loading your content..." /> : ""
+      }
+      {
+        isModalOpen? <SuccessModal  onClose={()=> setIsModalOpen(false)} /> :""
+      }
+      {
+        isErrorModelopen? <ErrorModal onClose={()=> setIsErrorModelopen(false)}/> : ""
+      }
+
     </>
   );
 };
