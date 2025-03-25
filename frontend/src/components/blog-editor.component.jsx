@@ -1,3 +1,4 @@
+// blog editor
 import { Link, useNavigate, useParams } from "react-router-dom";
 import logo from "../imgs/dblog.webp";
 import AnimationWrapper from "../common/page-animation";
@@ -9,22 +10,26 @@ import { EditoContext } from "../pages/editor.pages";
 import EditorJS from "@editorjs/editorjs";
 import { tools } from "./tools.component";
 import axios from "axios";
-import { UserContext } from "../App";
+import Loader from "../components/loader.component";
+
 const BlogEditor = () => {
-  const [imgURL, setImgURL] = useState(null);
+  
   let{blog_id}=useParams()
   let {
     blog,
-    blog: { title, banner, content, tags, des },
     setBlog,
     textEditor,
     setTextEditor,
     setEditorState,
   } = useContext(EditoContext);
-  //access token
-  // let {
-  //   userAuth: { access_token },
-  // } = useContext(UserContext);
+
+  if (!blog) {
+    return <Loader />;
+  }
+  
+  const { title, banner, content, tags, des } = blog;
+  // console.log("Blog at editor", blog);
+
   let navigate = useNavigate();
   //ossum part + portion
   useEffect(() => {

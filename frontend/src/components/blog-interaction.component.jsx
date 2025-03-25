@@ -4,10 +4,11 @@ import { Heart, MessageSquare, TwitterIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../App";
 import toast, { Toaster } from "react-hot-toast";
-import { likePost, isPostLikedByUser } from "../lib/contractInteraction";
+import { likePost, isPostLikedByUser, getPostOwner } from "../lib/contractInteraction";
 // import d from "./comments.component";
 import { useActiveAccount } from "thirdweb/react";
 import { LoadingOverlay } from "./register.modal-component";
+import { use } from "react";
 
 const BlogInteraction = () => {
   const {
@@ -22,13 +23,18 @@ const BlogInteraction = () => {
   const account = useActiveAccount();
   const address = useActiveAccount()?.address;
   console.log("address at BlogInteraction", address);
-
+  const [postOwner, setPostOwner] = useState(null);
   useEffect(() => {
     if (address && blogData) {
       checkIfUserLiked();
     }
+    getPostOwner(blogData.blog_id).then(setPostOwner);
+    console.log("BlogData at BlogInteraction", JSON.stringify(blogData));
   }, [address, blogData]);
 
+  useEffect(() => {
+    console.log("postOwner at BlogInteraction", postOwner);
+  }, [postOwner]);
   const checkIfUserLiked = async () => {
     try {
       if (!blogData || !blogData.blog_id) return;
@@ -38,7 +44,7 @@ const BlogInteraction = () => {
       console.error("Error checking like status:", error);
     }
   };
-
+  
   const handleLike = async () => {
     if (!address) {
       toast.error("Please connect your wallet to like the post.");
@@ -99,9 +105,17 @@ const BlogInteraction = () => {
           >
             <MessageSquare />
           </button>
-          {/* <p className="text-dark-grey text-xl">{blogData?.commentCount || 0}</p> */}
+          <p className="text-dark-grey text-xl">{blogData?.commentCount || 0}</p>
         </div>
         <div className="flex gap-6 items-center">
+          {address === postOwner && (
+            <Link
+              to={`/editor/${blogData.blog_id}`}
+              className="undeline hover:text-purple"
+            >
+              Edit
+            </Link>
+          )}
           <Link
             to={`https://twitter.com/intent/tweet?text=${blogData?.title || "Check this out!"}&url=${window.location.href}`}
           >

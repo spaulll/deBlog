@@ -1,13 +1,13 @@
-import { useContext, useEffect, useState } from "react";
-// import { UserContext } from "../App";
-import { Navigate, useParams } from "react-router-dom";
+import { useContext, useEffect, useState, createContext } from "react";
+import { useParams } from "react-router-dom";
 import BlogEditor from "../components/blog-editor.component";
 import PublishEditor from "../components/publish-form.component";
-import { createContext } from "react";
 import Loader from "../components/loader.component";
-import axios from "axios";
 import ConnectButtonAuth from "../components/web3Component/ConnectButtonAuth";
 import { useAuth } from "../contexts/AuthContext";
+import { getBlog } from "../lib/contractInteraction";
+import axios from "axios";
+import moment from "moment";
 
 const blogStructure = {
   title: "",
@@ -22,36 +22,62 @@ const blogStructure = {
 export const EditoContext = createContext({});
 
 const Editor = () => {
-
   let { blog_id } = useParams();
   const [blog, setBlog] = useState(blogStructure);
   const [editorState, setEditorState] = useState("editor");
   const [textEditor, setTextEditor] = useState({ isReady: false });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     if (!blog_id) {
-      return (setLoading(false))
+      setLoading(false);
+      return;
     }
-    axios.post(import.meta.env.VITE_SERVER_URL + "/get-blog", {
-      blog_id, draft: true, mode: 'edit'
-    })
-      .then((response) => {
-        // Access response.data.blog instead of destructuring directly
-        setBlog(response.data.blog);
-        console.log(response.data.blog);
+
+    const fetchBlog = async () => {
+      try {
+        // Fetch the post object using your getBlog function
+        const post = await getBlog(blog_id);
+        if (!post) {
+          setLoading(false);
+          return;
+        }
+
+        // Retrieve the blog content from IPFS using axios
+        const response = await axios.get(post.content);
+        const ipfsContent = response.data;
+
+        // Update the blog state with data from IPFS and the post object
+        setBlog({
+          title: ipfsContent.title,
+          des: ipfsContent.des,
+          banner: ipfsContent.banner,
+          content: ipfsContent.content,
+          publishedAt: moment.unix(post.timestamp).format("MM/DD/YYYY HH:mm:ss"),
+          likes: post.likes,
+          dislikes: post.dislikes,
+          commentCount: post.commentCount,
+          blog_id: blog_id,
+          // Initialize default comments and activity objects
+          comments: { results: [] },
+          activity: { total_parent_comments: 0 },
+          tags: ipfsContent.tags,
+        });
+
+        setError(null);
         setLoading(false);
-      })
-      .catch((err) => {
-        setBlog(null);
+      } catch (error) {
+        console.error("Error fetching blog:", error);
+        setError("Error fetching blog data");
         setLoading(false);
-      });
-  }, [])
-  // let {
-  //   userAuth: { access_token },
-  // } = useContext(UserContext);
+      }
+    };
+
+    fetchBlog();
+  }, [blog_id]);
 
   return (
     <EditoContext.Provider
@@ -64,20 +90,25 @@ const Editor = () => {
         setTextEditor,
       }}
     >
-      { isLoggedIn === false ? (
+      {!isLoggedIn ? (
         <div className="flex flex-col justify-center items-center h-screen">
-          <h2 className="text-3xl font-semibold">You are not logged in. Please connect your wallet</h2>
+          <h2 className="text-3xl font-semibold">
+            You are not logged in. Please connect your wallet
+          </h2>
           <div className="h-5" />
           <ConnectButtonAuth />
         </div>
-        
-      ) : loading ? <Loader /> :
-        editorState == "editor" ? (
-          <BlogEditor />
-        ) : (
-          <PublishEditor />
-        )}
+      ) : loading ? (
+        <Loader />
+      ) : error ? (
+        <div className="text-red-500 text-center mt-10">{error}</div>
+      ) : editorState === "editor" ? (
+        <BlogEditor />
+      ) : (
+        <PublishEditor />
+      )}
     </EditoContext.Provider>
   );
 };
+
 export default Editor;
