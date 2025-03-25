@@ -108,6 +108,35 @@ const useUploadBlog = () => {
     return uploadBlog;
 }
 
+const useEditBlog = () => {
+    const account = useActiveAccount();
+    const editBlog = async (ipfsUri, tags,blogIdHash) => {
+        console.log("editBlog() called:", ipfsUri);
+        if (!account) throw new Error("No connected account");
+        const owner = await getPostOwner(blogIdHash);
+        console.log("Owner:",owner);
+        console.log("Account:",account);
+        try {
+          const transaction = prepareContractCall({
+            contract: BlogContract,
+            method: "editPost",
+            params: [blogIdHash, ipfsUri],
+          });
+
+          const receipt = await sendAndConfirmTransaction({
+            transaction,
+            account
+          });
+          console.log("Receipt:",receipt);
+          return receipt.transactionHash;
+        } catch (error) {
+          console.error(error);
+          return error;
+        }
+    }
+    return editBlog;
+}
+
 const registerUser = async (account) => {
     console.log("registerUser() called:");
     // address = "0x726DCb71dc9298D87796309cdBAf3220EbC68472";
@@ -197,5 +226,34 @@ const isPostLikedByUser = async (blogIdHash, address) => {
     }
 };
 
+const getAllComments = async (blogIdHash) => {
+    if (!blogIdHash) throw new Error("Something went wrong");
+    try {
+        const comments = await readContract({
+            contract: BlogContract,
+            method: "getComments",
+            params: [blogIdHash],
+        });
+        return comments;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
 
-export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, registerUser, getBlog, likePost, isPostLikedByUser };
+const getPostOwner = async (blogIdHash) => {
+    if (!blogIdHash) throw new Error("Something went wrong");
+    try {
+        const postOwner = await readContract({
+            contract: BlogContract,
+            method: "postOwner",
+            params: [blogIdHash],
+        });
+        return postOwner;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, useEditBlog, registerUser, getBlog, likePost, isPostLikedByUser, getAllComments, getPostOwner };

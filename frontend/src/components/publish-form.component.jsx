@@ -1,18 +1,22 @@
 import AnimationWrapper from "../common/page-animation";
 import { toast, Toaster } from "react-hot-toast";
 import { X } from "lucide-react";
-import { useContext } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { EditoContext } from "../pages/editor.pages";
 import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
-import { useUploadBlog } from "../lib/contractInteraction";
+import { useUploadBlog, useEditBlog } from "../lib/contractInteraction";
+import { use } from "react";
 // import { }
 
 const PublishEditor = () => {
+  const [isEdited, setIsEdited] = useState(false);
   const uploadBlog = useUploadBlog();
+  const editBlog = useEditBlog();
   let { blog_id } = useParams()
+  const prev_Blog_id = useRef(""); 
   let characterLimit = 200;
   const tagLimit = 16;
   let {
@@ -27,6 +31,14 @@ const PublishEditor = () => {
   // } = useContext(UserContext);
   let navigate = useNavigate();
 
+  useEffect(() => {
+    if (blog_id) {
+      setIsEdited(true);
+      prev_Blog_id.current = blog_id;
+    }
+  }, [blog_id]);
+  console.log("isEdited", isEdited);
+  console.log("prev_Blog_id", prev_Blog_id.current);
   const handelCloseEvent = () => {
     setEditorState("editor");
   };
@@ -105,19 +117,29 @@ const PublishEditor = () => {
         const tags = blogJSON.tags;
         console.log("Id and URL: ", blogIdHash, blogUrl);
         if (blogIdHash && blogUrl) {
-          uploadBlog(blogUrl, tags, blogIdHash)
-            .then((transactionHash) => {
-              console.log("Transaction hash:", transactionHash);
+          if (isEdited) {
+            toast.dismiss(loadingToast);
+            loadingToast = toast.loading("Updating the blog...");          
+            editBlog(blogUrl, tags, prev_Blog_id.current).then(() => {
               toast.dismiss(loadingToast);
-              toast.success("Uploaded Successfully");
-              const blog_id = blogIdHash;
-              navigate(`/blog/${blog_id}`);
-            })
-            .catch((error) => {
-              console.error("Upload failed", error);
+              toast.success("Blog updated successfully.");
+              navigate(`/blog/${prev_Blog_id.current}`);
+            }).catch((err) => {
               toast.dismiss(loadingToast);
-              toast.error("Upload failed");
+              toast.error(err);
             });
+          } else {
+            toast.dismiss(loadingToast);
+            loadingToast = toast.loading("Publishing the blog...");
+            uploadBlog(blogUrl, tags, blogIdHash).then(() => {
+              toast.dismiss(loadingToast);
+              toast.success("Blog published successfully.");
+              navigate(`/blog/${blogIdHash}`);
+            }).catch((err) => {
+              toast.dismiss(loadingToast);
+              toast.error(err);
+            });
+          }
         } else {
           toast.dismiss(loadingToast);
           toast.error("Missing blog data");
