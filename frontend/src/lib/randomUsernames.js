@@ -14,7 +14,7 @@ function getRandomUsername() {
     const symbols = ["", "_", "-", "."]; // Safe special characters
 
     let username = "";
-    while (username.length === 0 || username.length > 10) {
+    while (username.length === 0 || username.length <= 10) {
         const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
         const noun = nouns[Math.floor(Math.random() * nouns.length)];
         const symbol = symbols[Math.floor(Math.random() * symbols.length)];
