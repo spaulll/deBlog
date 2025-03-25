@@ -24,7 +24,7 @@ let days = [
 ];
 export const getDay= (timeStamp)=>{
     let date = new Date(timeStamp);
-    return `${date.getDate()} ${months[date.getMonth()]}`;
+    return `${date.getDate()} ${months[date.getMonth()]} , ${String(date.getHours() % 12 || 12).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
 }
 
 export const getFullDay=( timeStamp)=>{
