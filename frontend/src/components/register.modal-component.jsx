@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, CheckCircle, Loader2, CircleX  } from "lucide-react";
+import { X, CheckCircle, Loader2, CircleX } from "lucide-react";
 
 export const SuccessModal = ({ onClose }) => {
   return (
@@ -19,19 +19,18 @@ export const SuccessModal = ({ onClose }) => {
           </div>
 
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Successfully accepted!
+            Success! You're In!
           </h2>
 
           <p className="text-gray-600 mb-8">
-            You have Successfully registered, you can change your username as
-            per you convenient.
+            Congrats! You've officially joined the deBlog community. Feel free to tweak your profile anytime from the dashboard.
           </p>
 
           <button
             onClick={onClose}
             className="bg-black hover:bg-gray-700 text-white hover:rounded-3xl font-medium py-2 px-4 rounded-2xl w-full max-w-xs"
           >
-            Got it
+            Sweet, Got It!
           </button>
         </div>
       </div>
@@ -40,7 +39,6 @@ export const SuccessModal = ({ onClose }) => {
 };
 
 export const ErrorModal = ({ onClose }) => {
-
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-lg shadow-dark-grey w-full max-w-md relative border-[1px] hover:border-[0px]">
@@ -53,24 +51,30 @@ export const ErrorModal = ({ onClose }) => {
         </button>
 
         <div className="flex flex-col items-center text-center p-6 pt-8 pb-8">
-          <div className="text-green-500 mb-4">
-            <CircleX  size={56} color="#b51c1c" />
+          <div className="text-red-500 mb-4">
+            <CircleX size={56} color="#b51c1c" />
           </div>
 
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            failled to register
+            Oops! Registration Failed
           </h2>
 
           <p className="text-gray-600 mb-8">
-            Some error has occurred.
+            Something went sideways. Let's give it another try!
           </p>
+
+          <button
+            onClick={onClose}
+            className="bg-black hover:bg-gray-700 text-white hover:rounded-3xl font-medium py-2 px-4 rounded-2xl w-full max-w-xs"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-// Loading overlay for full-screen loading
 export const LoadingOverlay = ({ isLoading, text = "Loading..." }) => {
   if (!isLoading) return null;
 
@@ -82,7 +86,9 @@ export const LoadingOverlay = ({ isLoading, text = "Loading..." }) => {
             color="#322f2f"
             className="h-12 w-12 animate-spin text-blue-500"
           />
-          <p className="mt-4 text-gray-700 font-medium text-center">{text}</p>
+          <p className="mt-4 text-gray-700 font-medium text-center">
+            {text} Hang tight, good things take time!
+          </p>
         </div>
       </div>
     </div>

@@ -212,7 +212,7 @@ const Navbar = () => {
       </nav>
       <Outlet />
       {
-        isLoading? <LoadingOverlay isLoading={isLoading} text="Loading your content..." /> : ""
+        isLoading? <LoadingOverlay isLoading={isLoading} text="Registering..." /> : ""
       }
       {
         isModalOpen? <SuccessModal  onClose={()=> setIsModalOpen(false)} /> :""
