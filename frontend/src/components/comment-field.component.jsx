@@ -54,7 +54,7 @@ const CommentField = ({ action, index = undefined, replyingTo, setReplying = und
           },
         }
       )
-      .then((data) => {
+      .then(({data}) => {
         setComment("");
         data.commented_by = {
           personal_info: { username, profile_img, fullname },
