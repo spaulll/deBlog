@@ -131,7 +131,7 @@ const PublishEditor = () => {
           } else {
             toast.dismiss(loadingToast);
             loadingToast = toast.loading("Publishing the blog...");
-            uploadBlog(blogUrl, tags, blogIdHash).then(() => {
+            uploadBlog(blogUrl, tags, blogIdHash, title, des).then(() => {
               toast.dismiss(loadingToast);
               toast.success("Blog published successfully.");
               navigate(`/blog/${blogIdHash}`);
