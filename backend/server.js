@@ -8,6 +8,8 @@ import multer from "multer";
 import { uploadToIPFS, getIPFSUrl } from "./ipfsOps.js";
 import { keccak256 } from "thirdweb/utils"
 import { nanoid } from "nanoid";
+import { getLatestBlogs } from "./libs/graph-ops/latestBlogs.js";
+import { getTrendingBlogs } from "./libs/graph-ops/trendingBlogs.js";
 
 const privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) throw new Error("PRIVATE_KEY is not defined");
@@ -185,7 +187,7 @@ app.post("/create-blog", async (req, res) => {
         }
         const blogJSON = req.body;
         console.log("Blog JSON:", blogJSON);
-        let { title, des, banner, tags, content, draft } = blogJSON
+        let { title, des, banner, tags, content, draft, id } = blogJSON
 
         if (!title.length) {
             return res
@@ -230,8 +232,8 @@ app.post("/create-blog", async (req, res) => {
         console.log("Blog ID Hash:", blogIdHash);
 
         blogJSON.blog_id = blogIdHash;
-        
-        console.log(blogJSON)
+        console.log("Id on server:", id);
+        // console.log(blogJSON)
         // Step 3: If previously created blog, update it
 
         // Step 4: upload the blogJson to IPFS
@@ -263,6 +265,92 @@ app.post("/get-blog", async (req, res) => {
     
 })
 
+// app.post("/add-comment", async (req, res) => {
+//     try {
+//         // Step 1: Authenticate the user
+//         const jwt = req.cookies?.jwt;
+//         if (!jwt) {
+//             console.log("No JWT found in cookies");
+//             return res.status(401).json({ success: 0, message: "Unauthorized" });
+//         }
+//         const authResult = await thirdwebAuth.verifyJWT({ jwt });
+//         if (!authResult.valid) {
+//             console.log("Invalid JWT");
+//             return res.status(401).json({ success: 0, message: "Unauthorized" });
+//         }
+
+//         // Step 2: Validate the request body
+//         if (!req.body) {
+//             console.log("No comment data found in request body");
+//             return res.status(400).json({ success: 0, message: "No comment data found." });
+//         }
+//         const commentData = req.body;
+//         console.log("Comment Data:", commentData);
+//         const { blogIdHash, comment } = commentData;
+//         if (!blogIdHash.length) {
+//             return res
+//                 .status(403)
+//                 .json({ error: "You must provide a blog ID to add the comment" });
+//         }
+//         if (!comment.length) {
+//             return res
+//                 .status(403)
+//                 .json({ error: "You must provide a comment to add the comment" });
+//         }
+
+//         // Step 3: If previously created blog, update it
+
+//         // Step 4: upload the blogJson to IPFS
+//         const ipfsUri = await uploadToIPFS(JSON.stringify(commentData));
+//         console.log("IPFS URI:", ipfsUri);
+
+//         const commentUrl = await getIPFSUrl(ipfsUri);
+//         console.log("Comment URL:", commentUrl);
+
+//         // Download the blogJson from IPFS using the IPFS URI
+//         // const data = await storage.downloadJSON(ipfsUri);
+//         // console.log("IPFS Data:", data);
+
+//         return res.status(200).json({
+//             success: 1,
+//             message: "Comment is ready to be published.",
+//             commentUrl,
+//             blogIdHash,
+//             commentData                
+//         });
+
+//     } catch (err) {
+//         console.error("Error while creating blog:", err);
+//         return res.status(500).json({ success: 0, message: "Internal Server Error." });
+//     }
+// })
+
+app.get("/latest-blogs", async (req, res) => {
+    const blogs = await getLatestBlogs();
+    if (!blogs) {
+        return res.status(500).json({ success: 0, message: "Internal Server Error." });
+    }
+    console.log("Latest blogs:", blogs);
+    return res.status(200).json({
+        success: 1,
+        message: "Latest blogs fetched successfully.",
+        blogs
+    });
+});
+
+app.get("/trending-blogs", async (req, res) => {
+    const blogs = await getTrendingBlogs();
+    console.log("trending Blogs:", blogs);
+    if (!blogs) {
+        return res.status(500).json({ success: 0, message: "Internal Server Error." });
+    }
+    console.log("Trending blogs:", blogs);
+    return res.status(200).json({
+        success: 1,
+        message: "Trending blogs fetched successfully.",
+        blogs
+    });
+});
 app.listen(port, () => {
     console.log(`⚡ Auth server listening on port ${port}....`);
 });
