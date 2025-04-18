@@ -16,7 +16,7 @@ contract UserProfile {
         string username;
         string bio;
         string avatarUri;
-        uint16 postCount;       // Optional: May be used if you want to track posts here.
+        uint32 postCount;       // Optional: May be used if you want to track posts here.
         uint32 memberSince;
     }
 
@@ -26,6 +26,7 @@ contract UserProfile {
     mapping(address => User) internal users;
     mapping(bytes32 => bool) public usernameExists;
     mapping(address => bool) public isRegistered;
+    mapping(string => address) public usernameToAddress;
 
     // *************************
     // *** Core Functions    ***
@@ -58,7 +59,7 @@ contract UserProfile {
             postCount: 0,
             memberSince: uint32(block.timestamp)
         });
-
+        usernameToAddress[_username] = msg.sender;
         users[msg.sender] = newUser;
         usernameExists[usernameHash] = true;
         isRegistered[msg.sender] = true;
@@ -97,7 +98,7 @@ contract UserProfile {
         users[msg.sender].bio = _bio;
         users[msg.sender].avatarUri = _avatarUri;
         users[msg.sender].tipWalletAddress = _tipWalletAddress;
-
+        usernameToAddress[_username] = msg.sender;
         usernameExists[newUsernameHash] = true;
     }
 
@@ -114,6 +115,14 @@ contract UserProfile {
     function getUserTipWallet(address _userAddress) external view returns (address tipWalletAddress) {
         require(bytes(users[_userAddress].username).length > 0, "User does not exist");
         tipWalletAddress = users[_userAddress].tipWalletAddress;
+    }
+
+    /// @notice update post count of a user.
+    /// @param _userAddress The address of the user.
+    /// @param _postCount The new post count.
+    function updatePostCount(address _userAddress, uint32 _postCount) external {
+        require(bytes(users[_userAddress].username).length > 0, "User does not exist");
+        users[_userAddress].postCount = _postCount;
     }
 }
 

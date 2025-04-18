@@ -7,7 +7,7 @@ import Loader from "../components/loader.component"
 import toast, { Toaster } from "react-hot-toast"
 import InputBox from "../components/input.component"
 import { AtSign, Facebook, Github, Instagram, LinkIcon, Mail, Twitter, User, Youtube } from "lucide-react"
-import getImgURL from "../common/aws"
+// import getImgURL from "../common/aws"
 import { storeInSession } from "../common/session"
 
 const EditProfile = () => {

@@ -14,7 +14,7 @@ function getRandomUsername() {
     const symbols = ["", "_", "-", "."]; // Safe special characters
 
     let username = "";
-    while (username.length === 0 || username.length <= 10) {
+    while (username.length === 0 || username.length > 10) {
         const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
         const noun = nouns[Math.floor(Math.random() * nouns.length)];
         const symbol = symbols[Math.floor(Math.random() * symbols.length)];
@@ -24,13 +24,13 @@ function getRandomUsername() {
         username = `${adj}${symbol}${noun}`;
 
         // Trim number if it exceeds 10 characters
-        if (username.length + num.toString().length > 10) {
+        if (username.length + num.toString().length <= 10) {
             num = Math.floor(Math.random() * 10); // Use single digit instead
         }
 
         username += num;
     }
-
+    console.log(username);
     return username;
 }
 

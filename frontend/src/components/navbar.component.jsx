@@ -10,6 +10,7 @@ import {
   getAvatar,
   isRegisteredUser,
   registerUser,
+  getUserProfile,
 } from "../lib/contractInteraction";
 import { useActiveAccount } from "thirdweb/react";
 import { useAuth } from "../contexts/AuthContext";
@@ -28,8 +29,7 @@ const Navbar = () => {
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const [localAvatar, setLocalAvatar] = useState(null); // NEW: Local state to track UI updates
 
-  const { isLoggedIn, avatarUrl, setAvatarUrl, userAddress, setUserAddress } =
-    useAuth();
+  const { isLoggedIn, avatarUrl, setAvatarUrl, userAddress, setUserAddress, userName, setUserName } = useAuth();
   const address = useActiveAccount()?.address ?? "";
   const account = useActiveAccount();
   // for debugging
@@ -61,14 +61,15 @@ const Navbar = () => {
     try {
       toast.error("You are not Registered");
       let loadingToast = toast.loading("Registering user ...");
-      const hash = await registerUser(account);
+      const result = await registerUser(account);
+      setUserName(result.username)
       setIsLoading(false)
       // toast.dismiss(loadingToast);
-      if (hash) {
+      if (result) {
         toast.dismiss(loadingToast);
         toast("Successfully registered", { icon: "👌" });
         setIsModalOpen(true)
-        console.log("Hash:", hash);
+        console.log("Hash:", result.transactionHash);
         // console.log("isRegistered:", isRegistered);
       }
     } catch (error) {
@@ -99,7 +100,11 @@ const Navbar = () => {
       });
 
       isRegisteredUser(address).then((isRegistered) => {
+        getUserProfile(address).then((data) => {
+          setUserName(data.username);
+        })
         let loadingToast = toast.loading("loading profile...");
+        console.log("isRegistered:", isRegistered);
         setIsLoading(true)
         if (!isRegistered) {
           toast.dismiss(loadingToast);
@@ -115,7 +120,8 @@ const Navbar = () => {
 
   useEffect(() => {
     console.log("Updated userAddress:", userAddress);
-  }, [userAddress]);
+    console.log("Updated userName:", userName);
+  }, [userAddress, userName]);
 
   console.log("isAvatarLoading state:", isAvatarLoading);
   console.log("Avatar URL before rendering:", localAvatar); // Updated to use local state

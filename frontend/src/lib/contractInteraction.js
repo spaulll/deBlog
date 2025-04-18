@@ -6,10 +6,18 @@ import getRandomUsername from "./randomUsernames";
 // userProfile returs the below:
 // 0: tuple(address,string,string,string,uint256,address): user 0x726DCb71dc9298D87796309cdBAf3220EbC68472,lobstr,hello world,https://avatar.iran.liara.run/public,0,0x726DCb71dc9298D87796309cdBAf3220EbC68472
 
-const getUserProfile = async (address) => {
-    console.log("getUserProfile() called:", address);
+const getUserProfile = async (address, username = null) => {
+    console.log("getUserProfile() called:", address, username);
     // address = "0x726DCb71dc9298D87796309cdBAf3220EbC68472";
     try {
+        if (username) {
+            address = await readContract({
+                contract: UserProfileContract,
+                method: "usernameToAddress",
+                params: [username],
+            });
+            console.log("Username: ", username, "=> Address: ", address);
+        }
         const userProfile = await readContract({
             contract: UserProfileContract,
             method: "getUserProfile",
@@ -17,6 +25,23 @@ const getUserProfile = async (address) => {
         });
         console.table(userProfile);
         return userProfile;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+};
+
+const editProfile = async (username, bio, avatarUrl, tipWalletAddress) => {
+    console.log("editProfile() called:", username, bio, avatarUrl, tipWalletAddress);
+    // address = "0x726DCb71dc9298D87796309cdBAf3220EbC68472";
+    try {
+        const tx = prepareContractCall({
+            contract: UserProfileContract,
+            method: "editProfile",
+            args: [username, bio, avatarUrl, tipWalletAddress],
+        });
+        const receipt = await sendAndConfirmTransaction(tx);
+        return receipt;
     } catch (error) {
         console.error(error);
         return null;
@@ -83,7 +108,7 @@ const isRegisteredUser = async (address) => {
 // Comment this if you want to use thirdweb smartwallet to upload blog gaslessly
 const useUploadBlog = () => {
     const account = useActiveAccount();
-    const uploadBlog = async (ipfsUri, tags, blogIdHash) => {
+    const uploadBlog = async (ipfsUri, tags, blogIdHash, title, des) => {
         console.log("uploadBlog() called:", ipfsUri);
         if (!account) throw new Error("No connected account");
     
@@ -91,7 +116,7 @@ const useUploadBlog = () => {
           const transaction = prepareContractCall({
             contract: BlogContract,
             method: "createPost",
-            params: [ipfsUri, tags, blogIdHash],
+            params: [ipfsUri, tags, blogIdHash, title, des],
           });
 
           const receipt = await sendAndConfirmTransaction({
@@ -151,7 +176,10 @@ const registerUser = async (account) => {
         });
         const receipt = await sendAndConfirmTransaction({ transaction, account });
         console.log("Receipt:",receipt);
-        return receipt.transactionHash;
+        return {
+            transactionHash: receipt.transactionHash,
+            username
+        };
     } catch (error) {
         console.error(error);
         return null;
@@ -172,6 +200,21 @@ const getBlog = async (blogIdHash) => {
         return null;
     }
 }
+
+// const getBlogsByOwner = async (address) => {
+//     if (!address) throw new Error("Something went wrong");
+//     try {
+//         const blogs = await readContract({
+//             contract: BlogContract,
+//             method: "getPostsByOwner",
+//             params: [address],
+//         });
+//         return blogs;
+//     } catch (error) {
+//         console.error(error);
+//         return null;
+//     }
+// }
 
 const likePost = async (blogIdHash, account) => {
     if (!account) throw new Error("No connected account");
@@ -226,7 +269,7 @@ const isPostLikedByUser = async (blogIdHash, address) => {
     }
 };
 
-const getAllComments = async (blogIdHash) => {
+const getCommentsFromContract = async (blogIdHash) => {
     if (!blogIdHash) throw new Error("Something went wrong");
     try {
         const comments = await readContract({
@@ -256,4 +299,20 @@ const getPostOwner = async (blogIdHash) => {
     }
 }
 
-export { getUserProfile , getAvatar, isRegisteredUser, useUploadBlog, useEditBlog, registerUser, getBlog, likePost, isPostLikedByUser, getAllComments, getPostOwner };
+const addCommentToContract = async (blogIdHash, comment) => {
+    if (!blogIdHash) throw new Error("Something went wrong");
+    try {
+        const transaction = prepareContractCall({
+            contract: BlogContract,
+            method: "addComment",
+            params: [blogIdHash, comment],
+        });
+        const receipt = await sendAndConfirmTransaction({ transaction });
+        return receipt.transactionHash;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export { getUserProfile, editProfile, getAvatar, isRegisteredUser, useUploadBlog, useEditBlog, registerUser, getBlog, likePost, isPostLikedByUser, getCommentsFromContract, getPostOwner, addCommentToContract };

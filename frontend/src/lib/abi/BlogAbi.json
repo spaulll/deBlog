@@ -2,8 +2,124 @@
 	{
 		"inputs": [
 			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "_content",
+				"type": "string"
+			}
+		],
+		"name": "addComment",
+		"outputs": [
+			{
+				"internalType": "uint32",
+				"name": "commentId",
+				"type": "uint32"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_ipfsUri",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_tags",
+				"type": "string[]"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "createPost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint32",
+				"name": "_commentId",
+				"type": "uint32"
+			},
+			{
+				"internalType": "string",
+				"name": "_newContent",
+				"type": "string"
+			}
+		],
+		"name": "editComment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "_newContent",
+				"type": "string"
+			}
+		],
+		"name": "editPost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "bool",
+				"name": "like",
+				"type": "bool"
+			}
+		],
+		"name": "toggleLikeDislike",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
-				"name": "_userProfileAddress",
+				"name": "_userProfileContractAddress",
 				"type": "address"
 			}
 		],
@@ -20,7 +136,7 @@
 				"type": "address"
 			},
 			{
-				"indexed": true,
+				"indexed": false,
 				"internalType": "string",
 				"name": "username",
 				"type": "string"
@@ -54,6 +170,18 @@
 				"internalType": "bytes32",
 				"name": "blogIdHash",
 				"type": "bytes32"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
 			}
 		],
 		"name": "PostCreated",
@@ -136,35 +264,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_postOwner",
-				"type": "address"
-			},
-			{
-				"internalType": "uint32",
-				"name": "_postIndex",
-				"type": "uint32"
-			},
-			{
-				"internalType": "string",
-				"name": "_content",
-				"type": "string"
-			}
-		],
-		"name": "addComment",
-		"outputs": [
-			{
-				"internalType": "uint32",
-				"name": "commentId",
-				"type": "uint32"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "bytes32",
 				"name": "",
 				"type": "bytes32"
@@ -189,83 +288,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_ipfsUri",
-				"type": "string"
-			},
-			{
-				"internalType": "string[]",
-				"name": "_tags",
-				"type": "string[]"
-			},
-			{
 				"internalType": "bytes32",
 				"name": "_blogIdHash",
 				"type": "bytes32"
-			}
-		],
-		"name": "createPost",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_postOwner",
-				"type": "address"
-			},
-			{
-				"internalType": "uint32",
-				"name": "_postIndex",
-				"type": "uint32"
-			},
-			{
-				"internalType": "uint32",
-				"name": "_commentId",
-				"type": "uint32"
-			},
-			{
-				"internalType": "string",
-				"name": "_newContent",
-				"type": "string"
-			}
-		],
-		"name": "editComment",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint32",
-				"name": "postIndex",
-				"type": "uint32"
-			},
-			{
-				"internalType": "string",
-				"name": "_newContent",
-				"type": "string"
-			}
-		],
-		"name": "editPost",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_postOwner",
-				"type": "address"
-			},
-			{
-				"internalType": "uint32",
-				"name": "_postIndex",
-				"type": "uint32"
 			}
 		],
 		"name": "getComments",
@@ -303,11 +328,6 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_userAddress",
-				"type": "address"
-			},
 			{
 				"internalType": "bytes32",
 				"name": "_blogIdHash",
@@ -372,6 +392,77 @@
 				"internalType": "struct Blog.Post",
 				"name": "post",
 				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_owner",
+				"type": "address"
+			}
+		],
+		"name": "getPostsByOwner",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint32",
+						"name": "likes",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint32",
+						"name": "dislikes",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint32",
+						"name": "id",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint32",
+						"name": "timestamp",
+						"type": "uint32"
+					},
+					{
+						"internalType": "uint32",
+						"name": "commentCount",
+						"type": "uint32"
+					},
+					{
+						"internalType": "bool",
+						"name": "edited",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "draft",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "content",
+						"type": "string"
+					},
+					{
+						"internalType": "string[]",
+						"name": "tags",
+						"type": "string[]"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "blogIdHash",
+						"type": "bytes32"
+					}
+				],
+				"internalType": "struct Blog.Post[]",
+				"name": "posts",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
@@ -457,95 +548,20 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_tag",
-				"type": "string"
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
 			}
 		],
-		"name": "searchPostsByTag",
+		"name": "postOwner",
 		"outputs": [
 			{
-				"components": [
-					{
-						"internalType": "uint32",
-						"name": "likes",
-						"type": "uint32"
-					},
-					{
-						"internalType": "uint32",
-						"name": "dislikes",
-						"type": "uint32"
-					},
-					{
-						"internalType": "uint32",
-						"name": "id",
-						"type": "uint32"
-					},
-					{
-						"internalType": "uint32",
-						"name": "timestamp",
-						"type": "uint32"
-					},
-					{
-						"internalType": "uint32",
-						"name": "commentCount",
-						"type": "uint32"
-					},
-					{
-						"internalType": "bool",
-						"name": "edited",
-						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "draft",
-						"type": "bool"
-					},
-					{
-						"internalType": "string",
-						"name": "content",
-						"type": "string"
-					},
-					{
-						"internalType": "string[]",
-						"name": "tags",
-						"type": "string[]"
-					},
-					{
-						"internalType": "bytes32",
-						"name": "blogIdHash",
-						"type": "bytes32"
-					}
-				],
-				"internalType": "struct Blog.Post[]",
-				"name": "posts",
-				"type": "tuple[]"
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_userAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint32",
-				"name": "postIndex",
-				"type": "uint32"
-			},
-			{
-				"internalType": "bool",
-				"name": "like",
-				"type": "bool"
-			}
-		],
-		"name": "toggleLikeDislike",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -559,9 +575,9 @@
 		"name": "userPostCount",
 		"outputs": [
 			{
-				"internalType": "uint32",
+				"internalType": "uint16",
 				"name": "",
-				"type": "uint32"
+				"type": "uint16"
 			}
 		],
 		"stateMutability": "view",
