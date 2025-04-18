@@ -315,4 +315,4 @@ const addCommentToContract = async (blogIdHash, comment) => {
     }
 }
 
-export { getUserProfile, editProfile, getAvatar, isRegisteredUser, useUploadBlog, useEditBlog, registerUser, getBlog, getBlogsByOwner, likePost, isPostLikedByUser, getCommentsFromContract, getPostOwner, addCommentToContract };
+export { getUserProfile, editProfile, getAvatar, isRegisteredUser, useUploadBlog, useEditBlog, registerUser, getBlog, likePost, isPostLikedByUser, getCommentsFromContract, getPostOwner, addCommentToContract };
