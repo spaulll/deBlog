@@ -14,12 +14,14 @@ contract Blog {
     // *************************
     event PostCreated(
         address indexed userAddress, 
-        string indexed username,
+        string username,
         uint32 postId, 
         string ipfsUri, 
         uint32 timestamp, 
         string[] tags,
-        bytes32 blogIdHash
+        bytes32 blogIdHash,
+        string title,
+        string description
     );
     event PostEdited(
         address indexed userAddress, 
@@ -31,6 +33,7 @@ contract Blog {
         address indexed reactor, 
         address indexed postOwner, 
         uint32 postId, 
+        bytes32 blogIdHash,
         bool like, 
         uint32 likes, 
         uint32 dislikes
@@ -70,7 +73,7 @@ contract Blog {
     mapping(address => mapping(address => mapping(uint32 => bool))) public hasLiked;
     mapping(address => mapping(address => mapping(uint32 => bool))) public hasDisliked;
     // Per-user post counter.
-    mapping(address => uint32) public userPostCount;
+    mapping(address => uint16) public userPostCount;
     // Tag tracking.
     mapping(bytes32 => bool) internal tagExists;
     // Get blogIdHash by tag.
@@ -106,7 +109,7 @@ contract Blog {
     /// @param _ipfsUri URI where the post content is stored.
     /// @param _tags Tags for the post.
     /// @param _blogIdHash Unique identifier for the post.
-    function createPost(string calldata _ipfsUri, string[] calldata _tags, bytes32 _blogIdHash) external onlyRegistered {
+    function createPost(string calldata _ipfsUri, string[] calldata _tags, bytes32 _blogIdHash, string calldata title, string calldata description) external onlyRegistered {
         require(bytes(_ipfsUri).length > 0, "Content cannot be empty");
 
         // Fetch the user's profile to get their username.
@@ -114,8 +117,9 @@ contract Blog {
         require(bytes(user.username).length > 0, "User does not exist");
 
         // Use local counter for postId.
-        uint32 postId = userPostCount[msg.sender];
+        uint16 postId = userPostCount[msg.sender];
         userPostCount[msg.sender] = postId + 1;
+        user.postCount = userPostCount[msg.sender];
         // Assign the postId to the blogIdHash.
         postIdsByBlogIdHash[_blogIdHash] = postId;
 
@@ -142,7 +146,7 @@ contract Blog {
             blogIdHash: _blogIdHash
         });
 
-        emit PostCreated(msg.sender, user.username, postId, _ipfsUri, uint32(block.timestamp), _tags, _blogIdHash);
+        emit PostCreated(msg.sender, user.username, postId, _ipfsUri, uint32(block.timestamp), _tags, _blogIdHash, title, description);
     }
 
     /// @notice Edit an existing post using its blogIdHash.
@@ -193,7 +197,7 @@ contract Blog {
             hasDisliked[msg.sender][owner][postIndex] = true;
         }
 
-        emit PostReacted(msg.sender, owner, postIndex, like, post.likes, post.dislikes);
+        emit PostReacted(msg.sender, owner, postIndex, _blogIdHash, like, post.likes, post.dislikes);
     }
 
     /// @notice Retrieve a published post by its blogIdHash.
@@ -205,6 +209,36 @@ contract Blog {
         require(userPosts[owner][postIndex].draft == false, "Draft posts cannot be fetched");
         require(bytes(userPosts[owner][postIndex].content).length > 0, "Post does not exist");
         post = userPosts[owner][postIndex];
+    }
+
+    /// @notice Retrieve all published posts by a user.
+    /// @param _owner The address of the user.
+    /// @return posts An array of Post structs.
+    function getPostsByOwner(address _owner) external view returns (Post[] memory posts) {
+        uint32 totalPosts = userPostCount[_owner];
+        uint32 publishedCount = 0;
+        
+        // First loop: count only the published posts.
+        for (uint32 i = 0; i < totalPosts; i++) {
+            Post storage post = userPosts[_owner][i];
+            // Only count posts that are published (not a draft) and exist.
+            if (!post.draft && bytes(post.content).length > 0) {
+                publishedCount++;
+            }
+        }
+        
+        // Allocate a new array for the published posts.
+        posts = new Post[](publishedCount);
+        uint32 j = 0;
+        
+        // Second loop: populate the array with published posts.
+        for (uint32 i = 0; i < totalPosts; i++) {
+            Post storage post = userPosts[_owner][i];
+            if (!post.draft && bytes(post.content).length > 0) {
+                posts[j] = post;
+                j++;
+            }
+        }
     }
 
     /// @notice Add a comment to a post using its blogIdHash.
