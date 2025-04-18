@@ -107,9 +107,9 @@
 						"type": "string"
 					},
 					{
-						"internalType": "uint16",
+						"internalType": "uint32",
 						"name": "postCount",
-						"type": "uint16"
+						"type": "uint32"
 					},
 					{
 						"internalType": "uint32",
@@ -177,6 +177,25 @@
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"name": "usernameToAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
