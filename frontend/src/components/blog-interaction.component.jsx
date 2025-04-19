@@ -4,11 +4,17 @@ import { Heart, MessageSquare, TwitterIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../App";
 import toast, { Toaster } from "react-hot-toast";
-import { likePost, isPostLikedByUser, getPostOwner } from "../lib/contractInteraction";
+import {
+  likePost,
+  isPostLikedByUser,
+  getPostOwner,
+} from "../lib/contractInteraction";
 // import d from "./comments.component";
 import { useActiveAccount } from "thirdweb/react";
 import { LoadingOverlay } from "./register.modal-component";
 import { use } from "react";
+import donation from "../imgs/donation.svg";
+import ApproveTransactionModal from "./tipping.modal";
 
 const BlogInteraction = () => {
   const {
@@ -18,7 +24,8 @@ const BlogInteraction = () => {
     setIsLikedByUser,
     // setCommentsWrapper,
   } = useContext(BlogContext);
-  const [hadelLoading, setHandelLoading] = useState(false)
+  const [hadelLoading, setHandelLoading] = useState(false);
+  const [hadelSupportLoading, setHandelSupportLoading] = useState(false);
 
   const account = useActiveAccount();
   const address = useActiveAccount()?.address;
@@ -44,7 +51,7 @@ const BlogInteraction = () => {
       console.error("Error checking like status:", error);
     }
   };
-  
+
   const handleLike = async () => {
     if (!address) {
       toast.error("Please connect your wallet to like the post.");
@@ -59,15 +66,15 @@ const BlogInteraction = () => {
       return;
     }
     try {
-      setHandelLoading(true)
+      setHandelLoading(true);
       const hash = await likePost(blogData.blog_id, account);
       if (!hash) {
         // toast.error("Failed to like the post.");
         throw new Error("Failed to like the post.");
-      };
+      }
       setIsLikedByUser(true);
       toast.success("Post liked successfully.");
-      setHandelLoading(false)
+      setHandelLoading(false);
       setBlogData((prev) => ({
         ...prev,
         likes: prev.likes + 1,
@@ -75,7 +82,32 @@ const BlogInteraction = () => {
     } catch (error) {
       console.error("Error liking post:", error);
       toast.error("Failed to like the post.");
-      setHandelLoading(false)
+      setHandelLoading(false);
+    }
+  };
+
+  const handelDonation = () => {
+    if (!address) {
+      toast.error("Please connect your wallet to like the post.");
+      return;
+    }
+    if (!blogData || !blogData.blog_id) {
+      toast.error("Blog data is not available.");
+      return;
+    }
+    try {
+      setHandelSupportLoading(true);
+      // const hash = await likePost(blogData.blog_id, account);
+      // if (!hash) {
+      //   // toast.error("Failed to like the post.");
+      //   throw new Error("Failed to like the post.");
+      // };
+      // toast.success("Thank you for your support.");
+      // setHandelSupportLoading(false)
+    } catch (error) {
+      console.error("Error in sending donation:", error);
+      toast.error("Failed to donate.");
+      setHandelSupportLoading(false);
     }
   };
 
@@ -105,7 +137,16 @@ const BlogInteraction = () => {
           >
             <MessageSquare />
           </button>
-          <p className="text-dark-grey text-xl">{blogData?.commentCount || 0}</p>
+
+          <p className="text-dark-grey text-xl">
+            {blogData?.commentCount || 0}
+          </p>
+          <button
+            className="w-10 h-10  rounded-full flex items-center justify-center bg-grey/80"
+            onClick={handelDonation}
+          >
+            <img src={donation} className="w-8" />
+          </button>
         </div>
         <div className="flex gap-6 items-center">
           {address === postOwner && (
@@ -117,14 +158,24 @@ const BlogInteraction = () => {
             </Link>
           )}
           <Link
-            to={`https://twitter.com/intent/tweet?text=${blogData?.title || "Check this out!"}&url=${window.location.href}`}
+            to={`https://twitter.com/intent/tweet?text=${
+              blogData?.title || "Check this out!"
+            }&url=${window.location.href}`}
           >
             <TwitterIcon className="hover:text-twitter" />
           </Link>
         </div>
       </div>
       <hr className="border-grey my-3" />
-      {hadelLoading ? <LoadingOverlay isLoading={hadelLoading} text="wait Like is initiateing..." />: ""}
+      {hadelSupportLoading ? <ApproveTransactionModal setHandelSupportLoading={setHandelSupportLoading} /> : ""}
+      {hadelLoading ? (
+        <LoadingOverlay
+          isLoading={hadelLoading}
+          text="Wait! like is initiating..."
+        />
+      ) : (
+        ""
+      )}
     </>
   );
 };
