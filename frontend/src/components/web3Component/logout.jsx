@@ -1,18 +1,19 @@
 import { useDisconnect, useActiveWallet, useActiveAccount, ConnectButton } from "thirdweb/react";
 import { useAuth } from "../../contexts/AuthContext";
-import {client} from "../../lib/client";
+import { client } from "../../lib/client";
 
 function Logout() {
     const { disconnect } = useDisconnect();
-    const { isLoggedIn, setIsLoggedIn } = useAuth();
+    const { isLoggedIn, setIsLoggedIn, userName } = useAuth();
     const wallet = useActiveWallet();
     if (!wallet) {
         return null;
     }
     return (
         <button onClick={() => {
-            setIsLoggedIn(false);disconnect(wallet)
-        }} className="link pl-8 py-4">Logout</button>
+            setIsLoggedIn(false); disconnect(wallet)
+        }} className="link pl-8 py-4 pr-14">Logout @{userName || "User"}
+        </button>
     );
 }
 
