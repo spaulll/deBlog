@@ -10,6 +10,9 @@ import { keccak256 } from "thirdweb/utils"
 import { nanoid } from "nanoid";
 import { getLatestBlogs } from "./libs/graph-ops/latestBlogs.js";
 import { getTrendingBlogs } from "./libs/graph-ops/trendingBlogs.js";
+import { getUserProfile } from "./libs/contractInteraction.js";
+import { getBlogsOfAuthor } from "./libs/graph-ops/blogsByAuthor.js";
+
 
 const privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) throw new Error("PRIVATE_KEY is not defined");
@@ -90,7 +93,6 @@ app.get("/isLoggedIn", async (req, res) => {
 
     console.log("Received JWT", jwt);
     const authResult = await thirdwebAuth.verifyJWT({ jwt });
-
     if (!authResult.valid) {
         return res.send(false);
     }
@@ -351,6 +353,48 @@ app.get("/trending-blogs", async (req, res) => {
         blogs
     });
 });
+
+app.get("/api/search-blogs", async (req, res) => {
+    const { username } = req.query;
+    if (username) {
+        console.log("Username:", username);
+        const blogs = await getBlogsOfAuthor(username);
+        if (!blogs) {
+            return res.status(500).json({ success: 0, message: "Internal Server Error." });
+        }
+        console.log("Blogs of author:", blogs);
+        return res.status(200).json({
+            success: 1,
+            message: "Blogs of author fetched successfully.",
+            blogs
+        });
+    }
+});
+
+app.post("/get-user-profile", async (req, res) => {
+    // const jwt = req.body?.jwt
+    // console.log("Received JWT", jwt);
+    // if (!jwt) {
+    //     console.log("No JWT found in cookies");
+    //     return res.status(401).json({ success: 0, message: "Unauthorized" });
+    // }
+    // const authResult = await thirdwebAuth.verifyJWT({ jwt });
+    // if (!authResult.valid) {
+    //     console.log("Invalid JWT");
+    //     return res.status(401).json({ success: 0, message: "Unauthorized" });
+    // }
+    const username = req.body.username;
+    // const address =  authResult.parsedJWT["sub"];
+    // console.log("User address:", address);
+    const user = await getUserProfile(null, username);
+    console.log("User data:", user);
+    return res.status(200).json({
+        success: 1,
+        message: "User profile fetched successfully.",
+        user
+    });
+});
+
 app.listen(port, () => {
     console.log(`⚡ Auth server listening on port ${port}....`);
 });
