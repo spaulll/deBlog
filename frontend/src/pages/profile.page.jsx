@@ -10,39 +10,40 @@ import { filterPaginationData } from "../common/filter-pagination-data";
 import InPageNavigation from "../components/inpage-navigation.component";
 import NoDataMessage from "../components/nodata.component";
 import BlogPostCard from "../components/blog-post.component";
-import LoadMoreDataBtn from "../components/load-more.component";
+// import LoadMoreDataBtn from "../components/load-more.component";
 import PageNotFound from "./404.page";
+import { useAuth } from "../contexts/AuthContext";
 
 export const profileStructure = {
   personal_info: {
-    fullname: "", // Default empty string for full name
-    email: "", // Default empty string for email
-    username: "", // Default empty string for username
-    bio: "", // Default empty string for bio
-    profile_img: "", // Default empty string for profile image URL
+    fullname: "",
+    email: "",
+    username: "",
+    bio: "",
+    profile_img: "",
   },
   social_links: {
-    youtube: "", // Default empty string for YouTube link
-    instagram: "", // Default empty string for Instagram link
-    facebook: "", // Default empty string for Facebook link
-    twitter: "", // Default empty string for Twitter link
-    github: "", // Default empty string for GitHub link
-    website: "", // Default empty string for personal website link
+    youtube: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    github: "",
+    website: "",
   },
   account_info: {
-    total_posts: 0, // Default 0 for total posts
-    total_reads: 0, // Default 0 for total reads
+    total_posts: 0,
   },
-  joinedAt: "", // Changed default to an empty string for consistency
+  joinedAt: "",
 };
 
 const ProfilePage = () => {
-  let { id: profileId } = useParams();
-  let [profile, setProfile] = useState(profileStructure);
-  let [loading, setLoading] = useState(true);
-  let [blogs, setBlogs] = useState(null);
-  let [profileLoaded, setProfileLoaded] = useState("");
-  let {
+  const { id: profileId } = useParams();
+  const [profile, setProfile] = useState(profileStructure);
+  const [loading, setLoading] = useState(true);
+  const [blogs, setBlogs] = useState(null);
+  const [profileLoaded, setProfileLoaded] = useState("");
+
+  const {
     personal_info: {
       fullname,
       email,
@@ -51,113 +52,117 @@ const ProfilePage = () => {
       profile_img,
     },
     social_links,
-    account_info: { total_posts, total_reads },
+    account_info: { total_posts },
     joinedAt,
   } = profile;
-  let {
-    userAuth: { username },
-  } = useContext(UserContext);
+
+  const { userName } = useAuth();
+  const username = userName;
 
   const fetchUserProfile = () => {
+    console.log("Fetching profile for:", profileId);
     axios
       .post(import.meta.env.VITE_SERVER_URL + "/get-user-profile", {
         username: profileId,
       })
       .then(({ data }) => {
-        // console.log(data.user);
-        if(data.user != null){
-            setProfile(data.user);
-
+        console.log("Profile API response:", data);
+        if (data.user != null) {
+          setProfile(data.user);
+          console.log("Profile set:", data.user);
+          getBlogs({ user_id: profileId });
+        } else {
+          console.warn("No user found.");
         }
         setProfileLoaded(profileId);
-        getBlogs({ user_id: data.user._id });
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.error("Error fetching profile:", err);
         setLoading(false);
       });
   };
 
+  const getBlogs = (user_id) => {
+    console.warn("Fetching blogs for user_id:", user_id.user_id);
+    if (!user_id) {
+      console.warn("user_id missing for blog fetch.");
+      return;
+    }
 
-  const getBlogs = ({ page = 1, user_id }) => {
-    user_id = user_id == undefined ? blogs.user_id : user_id;
     axios
-      .post(import.meta.env.VITE_SERVER_URL + "/search-blogs", {
-        author: user_id,
-        page,
+      .get(import.meta.env.VITE_SERVER_URL + "/api/search-blogs", {
+        params: {
+          username: user_id.user_id,
+        },
       })
       .then(async ({ data }) => {
-        let formatedData = await filterPaginationData({
-          state: blogs,
-          data: data.blogs,
-          page,
-          countRoute: "/search-blogs-count",
-          data_to_send: { author: user_id },
-        }).catch((err) => {
-          console.error("Error fetching blogs:", err);
-        });
-
-        formatedData.user_id = user_id;
-        console.log(formatedData);
-        setBlogs(formatedData);
+        console.log("Blogs API response:", data);
+        console.log("JSON data:", JSON.stringify(data, null, 2));
+        if (data.blogs) {
+          console.log("Formatted blog data:", data.blogs);
+          setBlogs(data.blogs);
+          console.log("Blogs set:", data.blogs);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching blogs:", err);
       });
   };
 
-
   useEffect(() => {
-    if (profileId != profileLoaded) {
-      setBlogs(null);
-    }
-    if (blogs == null) {
+    console.log("useEffect triggered");
+    console.log("profileId:", profileId);
+    console.log("profileLoaded:", profileLoaded);
+    console.log("blogs:", blogs);
+
+    if (profileId !== profileLoaded) {
+      console.log("Resetting state due to profileId change");
       resetStates();
       fetchUserProfile();
     }
-  }, [profileId, blogs]);
+  }, [profileId]);
 
   const resetStates = () => {
+    console.log("Resetting profile and blogs state...");
     setProfile(profileStructure);
-    fetchUserProfile();
+    setBlogs(null);
     setProfileLoaded("");
+    setLoading(true);
   };
+
   return (
     <AnimationWrapper>
       {loading ? (
-        <Loader />
-      ) : (
-        // Add your profile page rendering logic here
-        profile_username.length?
+        <div className="flex justify-center items-center min-h-[300px]">
+          <Loader className="animate-spin h-10 w-10 text-gray-500" />
+        </div>
+      ) : profile_username?.length ? (
         <section className="h-cover md:flex flex-row-reverse items-start gap-5 min-[1100px]:gap-12 ">
           <div className="flex flex-col max-md:items-center gap-5 min-w-[250px] md:w-[50%] md:pl-8 md-border-1 border-grey md:sticky md:top-[100px] md:py-10">
             <img
               src={profile_img}
-              className="w-48 h-48 rounded-full md:w-32 md:h-32 bg-grey "
+              className="w-48 h-48 rounded-full md:w-32 md:h-32 bg-grey"
+              alt="Profile"
             />
-            <h1 className="text-2xl font-medium ">@{profile_username}</h1>
-            <p className=" text-xl capitalize h-6 ">{fullname}</p>
-            <p className="">
-              {total_posts.toLocaleString()} Blogs:{" "}
-              {total_reads.toLocaleString()}
-            </p>
-            <div className="flex gap-4 mt-2 ">
-              {profileId == username ? (
-                <Link
-                  to="/settings/edit-profile"
-                  className="btn-light rounded-md "
-                >
+            <h1 className="text-2xl font-medium">@{profile_username}</h1>
+            <p className="text-xl capitalize h-6">{fullname}</p>
+            <p>{total_posts.toLocaleString()} Blogs</p>
+            <div className="flex gap-4 mt-2">
+              {profileId === username ? (
+                <Link to="/settings/edit-profile" className="btn-light rounded-md">
                   Edit Profile
                 </Link>
-              ) : (
-                " "
-              )}
+              ) : null}
             </div>
             <AboutUser
-              className=" max-md:hidden "
+              className="max-md:hidden"
               bio={bio}
               social_links={social_links}
-              joinedAt={joinedAt}
+              joinedAt={(joinedAt)}
             />
           </div>
+
           <div className="max-md:mt-12 w-full">
             <InPageNavigation
               routes={["blogs published", "about"]}
@@ -165,25 +170,28 @@ const ProfilePage = () => {
             >
               <>
                 {blogs == null ? (
-                  <Loader />
-                ) : !blogs.results.length ? (
-                  <NoDataMessage message="No blog published with this tag till now" />
+                  <div className="flex justify-center py-10">
+                    <Loader className="animate-spin h-8 w-8 text-gray-500" />
+                  </div>
+                ) : !blogs.length ? (
+                  <NoDataMessage message="No blog published by this user yet" />
                 ) : (
-                  blogs.results.map((blog, i) => {
-                    return (
-                      <AnimationWrapper
-                        transition={{ duration: 1, delay: i * 0.1 }}
-                        key={i}
-                      >
-                        <BlogPostCard
-                          content={blog}
-                          author={blog.author.personal_info}
-                        />
-                      </AnimationWrapper>
-                    );
-                  })
+                  blogs.map((blog, i) => (
+                    <AnimationWrapper
+                      transition={{ duration: 1, delay: i * 0.1 }}
+                      key={blog.blog_id}
+                    >
+                      <BlogPostCard
+                        content={blog}
+                        author={blog.author.personal_info}
+                        activity={blog.activity}
+                        publishedAt={blog.publishedAt}
+                      />
+                    </AnimationWrapper>
+                  ))
                 )}
-                <LoadMoreDataBtn state={blogs} fetchDataFun={getBlogs} />
+
+                {/* <LoadMoreDataBtn state={blogs} fetchDataFun={getBlogs} /> */}
               </>
               <AboutUser
                 bio={bio}
@@ -193,8 +201,8 @@ const ProfilePage = () => {
             </InPageNavigation>
           </div>
         </section>
-        :
-        <PageNotFound/>
+      ) : (
+        <PageNotFound />
       )}
     </AnimationWrapper>
   );
