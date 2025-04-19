@@ -19,7 +19,8 @@ const query = gql`
 // The URL for your subgraph endpoint.
 const url = 'https://api.studio.thegraph.com/query/108354/deblog-v1/version/latest';
 // Include the authorization header if needed.
-const headers = { Authorization: 'Bearer ***REMOVED***' };
+
+const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
 
 /**
  * Utility function to truncate an Ethereum address to a format like 0x11...1189.

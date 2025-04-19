@@ -20,7 +20,7 @@ const query = gql`
 `;
 
 const url = 'https://api.studio.thegraph.com/query/108354/deblog-v1/version/latest';
-const headers = { Authorization: 'Bearer ***REMOVED***' };
+const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
 
 function truncateAddress(address) {
   if (address.length < 10) return address;
