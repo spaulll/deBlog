@@ -172,7 +172,7 @@ const registerUser = async (account) => {
         const transaction = prepareContractCall({
             contract: UserProfileContract,
             method: "createUser",
-            params: [ username, "", "" ],
+            params: [ username, "", "", [] ],
         });
         const receipt = await sendAndConfirmTransaction({ transaction, account });
         console.log("Receipt:",receipt);
