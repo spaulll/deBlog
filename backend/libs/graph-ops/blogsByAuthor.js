@@ -16,10 +16,15 @@ const query = gql`
       timestamp
       title
     }
+    postReacteds {
+      blogIdHash
+      postOwner
+      likes
+    }
   }
 `;
 
-const url = 'https://api.studio.thegraph.com/query/108354/deblog-v1/version/latest';
+const url = 'https://api.studio.thegraph.com/query/108354/deblog-v2/version/latest';
 const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
 
 function truncateAddress(address) {
@@ -27,8 +32,8 @@ function truncateAddress(address) {
   return address.substring(0, 4) + "..." + address.substring(address.length - 4);
 }
 
-async function transformLatestBlogs(latestBlogs) {
-  const resolvedPosts = await Promise.all(
+async function transformLatestBlogs(latestBlogs, postReacteds) {
+  return await Promise.all(
     latestBlogs.map(async (post) => {
       let bannerUrl = "";
 
@@ -40,9 +45,15 @@ async function transformLatestBlogs(latestBlogs) {
         console.error("Failed to fetch IPFS JSON for latest blog:", err);
       }
 
+      // Match likes
+      const matchedReaction = postReacteds.find(
+        (reaction) => reaction.blogIdHash.toLowerCase() === post.blogIdHash.toLowerCase()
+      );
+      const totalLikes = matchedReaction ? parseInt(matchedReaction.likes) : 0;
+
       return {
         activity: {
-          total_likes: 0,
+          total_likes: totalLikes,
           total_comments: 0,
           total_reads: 0,
           total_parent_comments: 0,
@@ -63,15 +74,14 @@ async function transformLatestBlogs(latestBlogs) {
       };
     })
   );
-
-  return resolvedPosts;
 }
 
 const getBlogsOfAuthor = async (username) => {
   try {
     const variables = { username };
     const data = await request(url, query, variables, headers);
-    const latestBlogs = await transformLatestBlogs(data.postCreateds);
+    console.log('GraphQL response:', data);
+    const latestBlogs = await transformLatestBlogs(data.postCreateds, data.postReacteds);
     console.log('Formatted Blogs:', latestBlogs);
     return latestBlogs;
   } catch (error) {

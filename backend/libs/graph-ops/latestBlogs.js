@@ -13,11 +13,16 @@ const query = gql`
     timestamp
     title
   }
+  postReacteds {
+    blogIdHash
+    postOwner
+    likes
+  }
 }
 `;
 
 // The URL for your subgraph endpoint.
-const url = 'https://api.studio.thegraph.com/query/108354/deblog-v1/version/latest';
+const url = 'https://api.studio.thegraph.com/query/108354/deblog-v2/version/latest';
 // Include the authorization header if needed.
 
 const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
@@ -37,7 +42,7 @@ function truncateAddress(address) {
  * @param {Array} latestBlogs - Array of posts from the GraphQL response.
  * @returns {Array} Transformed array of blog objects.
  */
-async function transformLatestBlogs(latestBlogs) {
+async function transformLatestBlogs(latestBlogs, postReacteds) {
   const resolvedPosts = await Promise.all(
     latestBlogs.map(async (post) => {
       let bannerUrl = "";
@@ -50,9 +55,16 @@ async function transformLatestBlogs(latestBlogs) {
         console.error("Failed to fetch IPFS JSON for latest blog:", err);
       }
 
+      // Find the latest like count for this blog
+      const matchedReaction = postReacteds.find(
+        (reaction) => reaction.blogIdHash.toLowerCase() === post.blogIdHash.toLowerCase()
+      );
+
+      const totalLikes = matchedReaction ? parseInt(matchedReaction.likes) : 0;
+
       return {
         activity: {
-          total_likes: 0,
+          total_likes: totalLikes,
           total_comments: 0,
           total_reads: 0,
           total_parent_comments: 0,
@@ -86,7 +98,8 @@ async function transformLatestBlogs(latestBlogs) {
 const getLatestBlogs = async () => {
   try {
     const data = await request(url, query, {}, headers);
-    const latestBlogs = transformLatestBlogs(data.postCreateds);
+    console.log('GraphQL response:', data);
+    const latestBlogs = transformLatestBlogs(data.postCreateds, data.postReacteds);
     console.log('Formatted Blogs:', latestBlogs);
     return latestBlogs;
   } catch (error) {
