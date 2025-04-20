@@ -71,7 +71,7 @@ const isRegisteredUser = async (address) => {
             method: "isRegistered",
             params: [address],
         });
-        console.error("isRegistered:", isRegistered);
+        console.log("isRegistered:", isRegistered);
         return isRegistered;
     } catch (error) {
         console.error(error);

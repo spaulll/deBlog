@@ -175,10 +175,10 @@ const HomePage = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="#6b6666"
-                  stroke-width="1"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-trending-up"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-trending-up"
                 >
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                   <polyline points="16 7 22 7 22 13" />
