@@ -9,6 +9,7 @@ const formatUserProfile = (userProfile) => {
       username: userProfile.username,
       bio: userProfile.bio,
       profile_img: userProfile.avatarUrl || "https://api.dicebear.com/9.x/adventurer/svg?seed=error",
+      tip_address: userProfile.tipWalletAddress
     },
     social_links: {
       youtube: userProfile.youtube,

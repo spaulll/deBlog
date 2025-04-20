@@ -21,6 +21,7 @@ export const profileStructure = {
     username: "",
     bio: "",
     profile_img: "",
+    tip_address: "",
   },
   social_links: {
     youtube: "",
@@ -50,6 +51,7 @@ const ProfilePage = () => {
       username: profile_username,
       bio,
       profile_img,
+      tip_address,
     },
     social_links,
     account_info: { total_posts },
@@ -147,6 +149,7 @@ const ProfilePage = () => {
             />
             <h1 className="text-2xl font-medium">@{profile_username}</h1>
             <p className="text-xl capitalize h-6">{fullname}</p>
+            <p className="text-sm text-gray-500">Tip: {tip_address}</p>
             <p>{total_posts.toLocaleString()} Blogs</p>
             <div className="flex gap-4 mt-2">
               {profileId === username ? (
