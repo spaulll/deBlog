@@ -3,8 +3,17 @@
 import { getContract } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 import { thirdwebClient } from "../thirdwebClient.js";
-import userProfileAbi from "./abi/UserProfileAbi.json" assert { type: "json" };
-import blogAbi from "./abi/BlogAbi.json" assert { type: "json" };
+import { readFileSync } from 'fs';
+
+// import userProfileAbi from "./abi/UserProfileAbi.json" assert { type: "json" };
+// import blogAbi from "./abi/BlogAbi.json" assert { type: "json" };
+
+const userProfileAbi = JSON.parse(
+    readFileSync(new URL('./abi/UserProfileAbi.json', import.meta.url))
+  );
+const blogAbi = JSON.parse(
+    readFileSync(new URL('./abi/BlogAbi.json', import.meta.url))
+  );
 
 // console.log("client", thirdwebClient.clientId);
 
