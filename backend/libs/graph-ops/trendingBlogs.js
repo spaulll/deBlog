@@ -1,6 +1,5 @@
 import { gql, request } from 'graphql-request';
 
-// Define the GraphQL query to fetch the posts.
 const query = gql`
 {
   postCreateds(orderBy: timestamp, orderDirection: desc) {
@@ -13,62 +12,60 @@ const query = gql`
     timestamp
     title
   }
+  postReacteds {
+    blogIdHash
+    postOwner
+    likes
+  }
 }
 `;
 
-// The URL for your subgraph endpoint.
-const url = 'https://api.studio.thegraph.com/query/108354/deblog-v1/version/latest';
-// Include the authorization header if needed.
+const url = 'https://api.studio.thegraph.com/query/108354/deblog-v2/version/latest';
 const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
 
-/**
- * Utility function to truncate an Ethereum address to a format like 0x11...1189.
- * @param {string} address - The full Ethereum address.
- * @returns {string} The truncated address.
- */
 function truncateAddress(address) {
   if (address.length < 10) return address;
   return address.substring(0, 4) + "..." + address.substring(address.length - 4);
 }
 
-/**
- * Transforms the raw GraphQL response into the desired blog object format.
- * @param {Array} trendingBlogs - Array of posts from the GraphQL response.
- * @returns {Array} Transformed array of blog objects.
- */
-function transformTrendingBlogs(trendingBlogs) {
-  return trendingBlogs.map((post) => ({
-    activity: {
-      total_likes: 0,           // Default value (update if dynamic data is available)
-      total_comments: 0,        // Default value (update if dynamic data is available)
-      total_reads: 0,           // Default value (update if dynamic data is available)
-      total_parent_comments: 0  // Default value (update if dynamic data is available)
-    },
-    blog_id: post.blogIdHash,
-    title: post.title,
-    banner: post.ipfsUri,       // Assuming ipfsUri acts as the banner image URL
-    des: post.description,
-    tags: post.tags,
-    author: {
-      personal_info: {
-        fullname: truncateAddress(post.userAddress),
-        username: post.username,
-        profile_img: "https://api.dicebear.com/9.x/adventurer/svg?seed=sd" // Replace with actual image URL if available
-      }
-    },
-    publishedAt: new Date(post.timestamp * 1000) // Convert Unix timestamp (in seconds) to a JavaScript Date object
-  }));
+function transformTrendingBlogs(trendingBlogs, postReacteds) {
+  const blogs = trendingBlogs.map((post) => {
+    const matchedReaction = postReacteds.find(
+      (reaction) => reaction.blogIdHash.toLowerCase() === post.blogIdHash.toLowerCase()
+    );
+    const totalLikes = matchedReaction ? parseInt(matchedReaction.likes) : 0;
+
+    return {
+      activity: {
+        total_likes: totalLikes,
+        total_comments: 0,
+        total_reads: 0,
+        total_parent_comments: 0,
+      },
+      blog_id: post.blogIdHash,
+      title: post.title,
+      banner: post.ipfsUri,
+      des: post.description,
+      tags: post.tags,
+      author: {
+        personal_info: {
+          fullname: truncateAddress(post.userAddress),
+          username: post.username,
+          profile_img: "https://api.dicebear.com/9.x/adventurer/svg?seed=sd",
+        },
+      },
+      publishedAt: new Date(post.timestamp * 1000),
+    };
+  });
+
+  // Sort by total_likes in descending order
+  return blogs.sort((a, b) => b.activity.total_likes - a.activity.total_likes);
 }
 
-/**
- * Asynchronously fetches the trending blogs from The Graph, transforms the data,
- * and returns it in the desired format.
- * @returns {Promise<Array>} A promise that resolves to an array of formatted blog objects.
- */
 const getTrendingBlogs = async () => {
   try {
     const data = await request(url, query, {}, headers);
-    const trendingBlogs = transformTrendingBlogs(data.postCreateds);
+    const trendingBlogs = transformTrendingBlogs(data.postCreateds, data.postReacteds);
     console.log('Formatted Blogs:', trendingBlogs);
     return trendingBlogs;
   } catch (error) {
