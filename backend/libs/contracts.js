@@ -16,7 +16,7 @@ const UserProfileContract = getContract({
     // the chain the contract is deployed on
     chain: baseSepolia,
     // the contract's address
-    address: "0xcEb9883D9A20AC93243b2c51468e88A45D6D8E31",
+    address: "0x73A612D2E2fA8017582Fd89F56B27A4C9c953E02",
     // OPTIONAL: the contract's abi
     abi: userProfileAbi
 });
@@ -28,7 +28,7 @@ const BlogContract = getContract({
     // the chain the contract is deployed on
     chain: baseSepolia,
     // the contract's address
-    address: "0x3e6316a0342128FA011356B77A5EC2D4f03Ca2eF",
+    address: "0xc9335459eAe01612A32BC4e13F2727e85c4E4Ffc",
     // OPTIONAL: the contract's abi
     abi: blogAbi
 });

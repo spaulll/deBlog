@@ -15,6 +15,11 @@
 				"internalType": "string",
 				"name": "_avatarUri",
 				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_socialLinks",
+				"type": "string[]"
 			}
 		],
 		"name": "createUser",
@@ -46,6 +51,24 @@
 			}
 		],
 		"name": "editProfile",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_userAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint32",
+				"name": "_postCount",
+				"type": "uint32"
+			}
+		],
+		"name": "updatePostCount",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -115,6 +138,11 @@
 						"internalType": "uint32",
 						"name": "memberSince",
 						"type": "uint32"
+					},
+					{
+						"internalType": "string[]",
+						"name": "socialLinks",
+						"type": "string[]"
 					}
 				],
 				"internalType": "struct UserProfile.User",

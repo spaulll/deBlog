@@ -222,13 +222,13 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
+				"indexed": false,
 				"internalType": "address",
 				"name": "reactor",
 				"type": "address"
 			},
 			{
-				"indexed": true,
+				"indexed": false,
 				"internalType": "address",
 				"name": "postOwner",
 				"type": "address"
@@ -238,6 +238,12 @@
 				"internalType": "uint32",
 				"name": "postId",
 				"type": "uint32"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "blogIdHash",
+				"type": "bytes32"
 			},
 			{
 				"indexed": false,
