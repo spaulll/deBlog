@@ -16,8 +16,9 @@ contract UserProfile {
         string username;
         string bio;
         string avatarUri;
-        uint32 postCount;       // Optional: May be used if you want to track posts here.
+        uint32 postCount;     
         uint32 memberSince;
+        string[] socialLinks; 
     }
 
     // *************************
@@ -39,7 +40,8 @@ contract UserProfile {
     function createUser(
         string calldata _username, 
         string calldata _bio, 
-        string calldata _avatarUri
+        string calldata _avatarUri,
+        string[] calldata _socialLinks
     ) external {
         // Ensure username is nonempty and shorter than 10 characters.
         require(bytes(_username).length > 0 && bytes(_username).length < 10, "Username cannot be empty or longer than 10 characters");
@@ -57,7 +59,8 @@ contract UserProfile {
             bio: _bio,
             avatarUri: _avatarUri,
             postCount: 0,
-            memberSince: uint32(block.timestamp)
+            memberSince: uint32(block.timestamp),
+            socialLinks: _socialLinks
         });
         usernameToAddress[_username] = msg.sender;
         users[msg.sender] = newUser;
