@@ -30,8 +30,8 @@ contract Blog {
         uint32 timestamp
     );
     event PostReacted(
-        address indexed reactor, 
-        address indexed postOwner, 
+        address reactor, 
+        address postOwner, 
         uint32 postId, 
         bytes32 blogIdHash,
         bool like, 
@@ -119,7 +119,8 @@ contract Blog {
         // Use local counter for postId.
         uint16 postId = userPostCount[msg.sender];
         userPostCount[msg.sender] = postId + 1;
-        user.postCount = userPostCount[msg.sender];
+        
+        userProfile.updatePostCount(msg.sender, postId + 1);
         // Assign the postId to the blogIdHash.
         postIdsByBlogIdHash[_blogIdHash] = postId;
 
