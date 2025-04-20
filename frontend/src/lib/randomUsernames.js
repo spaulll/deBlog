@@ -11,7 +11,7 @@ function getRandomUsername() {
         "Moth", "Rhino", "Sloth", "Pigeon", "Panther", "Dingo", "Koala", "Viper", "Deer", "Gecko"
     ];
 
-    const symbols = ["", "_", "-", "."]; // Safe special characters
+    const symbols = ["", "_", "-"]; // Safe special characters
 
     let username = "";
     while (username.length === 0 || username.length > 10) {
