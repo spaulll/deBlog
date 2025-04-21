@@ -2,7 +2,7 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
-import { Loader } from "lucide-react";
+import { Check, Copy, Loader } from "lucide-react";
 import { UserContext } from "../App";
 import AboutUser from "../components/about.component";
 import { useScroll } from "framer-motion";
@@ -43,6 +43,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [blogs, setBlogs] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const {
     personal_info: {
@@ -133,6 +134,18 @@ const ProfilePage = () => {
     setLoading(true);
   };
 
+  const handelCopyAdderss = async () => {
+    try {
+      await navigator.clipboard.writeText(tip_address);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy!", err);
+    }
+  };
+
   return (
     <AnimationWrapper>
       {loading ? (
@@ -149,7 +162,12 @@ const ProfilePage = () => {
             />
             <h1 className="text-2xl font-medium">@{profile_username}</h1>
             <p className="text-xl capitalize h-6">{fullname}</p>
-            <p className="text-sm text-gray-500">Tip: {tip_address}</p>
+            <div className="col-span-2 flex gap-4 items-center">
+              <p className="text-sm text-gray-500">Tip: {tip_address}</p>
+              <button className="pt-4" onClick={handelCopyAdderss}>
+                  {copied ? <Check size={"20px"} /> : <Copy size={"20px"} />}
+              </button>
+            </div>
             <p>{total_posts.toLocaleString()} Blogs</p>
             <div className="flex gap-4 mt-2">
               {profileId === username ? (
