@@ -39,7 +39,7 @@ function transformTrendingBlogs(trendingBlogs, postReacteds) {
       activity: {
         total_likes: totalLikes,
         total_comments: 0,
-        total_reads: 0,
+        // total_reads: 0,
         total_parent_comments: 0,
       },
       blog_id: post.blogIdHash,
