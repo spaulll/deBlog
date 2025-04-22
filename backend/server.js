@@ -8,11 +8,13 @@ import multer from "multer";
 import { uploadToIPFS, getIPFSUrl } from "./ipfsOps.js";
 import { keccak256 } from "thirdweb/utils"
 import { nanoid } from "nanoid";
+
+// GraphQL imports
 import { getLatestBlogs } from "./libs/graph-ops/latestBlogs.js";
 import { getTrendingBlogs } from "./libs/graph-ops/trendingBlogs.js";
-import { getUserProfile } from "./libs/contractInteraction.js";
 import { getBlogsOfAuthor } from "./libs/graph-ops/blogsByAuthor.js";
-
+import { getBlogsByKeywords } from "./libs/graph-ops/blogsByKeyword.js";
+import { getUserProfile } from "./libs/contractInteraction.js";
 
 const privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) throw new Error("PRIVATE_KEY is not defined");
@@ -355,10 +357,31 @@ app.get("/trending-blogs", async (req, res) => {
 });
 
 app.get("/api/search-blogs", async (req, res) => {
-    const { username } = req.query;
-    if (username) {
-        console.log("Username:", username);
-        const blogs = await getBlogsOfAuthor(username);
+    const query = req.query;
+    let username = query.username || null;
+    let address = query.address || null;
+    let keyword = query.keyword || null;
+
+    const rawQuery = query.q || query.query || query.keyword;
+
+    // Check if rawQuery is provided and no other query parameters are set
+    if (rawQuery && !req.query.username && !req.query.address) {
+        if (rawQuery.length === 10) {
+            username = rawQuery;
+            keyword = rawQuery;
+            console.log("1st condition matched:", username, keyword);
+        } else if (rawQuery.length === 42 && rawQuery.startsWith("0x")) {
+            address = rawQuery;
+            console.log("2nd condition matched:", address);
+        } else {
+            keyword = rawQuery;
+            console.log("3rd condition matched:", keyword);
+        }
+    }
+
+    // search by username or address
+    if (username || address) {
+        const blogs = await getBlogsOfAuthor(username, address);
         if (!blogs) {
             return res.status(500).json({ success: 0, message: "Internal Server Error." });
         }
@@ -369,6 +392,22 @@ app.get("/api/search-blogs", async (req, res) => {
             blogs
         });
     }
+    // search by keyword
+    else if (keyword) {
+        const blogs = await getBlogsByKeywords(keyword.toLowerCase());
+        if (!blogs) {
+            return res.status(500).json({ success: 0, message: "Internal Server Error." });
+        }
+        console.log("Blogs by keyword:", blogs);
+        return res.status(200).json({
+            success: 1,
+            message: "Blogs by keyword fetched successfully.",
+            blogs
+        });
+    }
+
+    // No valid search criteria provided
+    return res.status(400).json({ success: 0, message: "Invalid search parameters." });
 });
 
 app.post("/get-user-profile", async (req, res) => {
