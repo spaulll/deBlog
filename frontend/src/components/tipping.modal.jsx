@@ -3,7 +3,7 @@ import { X, Copy, CheckCircle } from "lucide-react";
 import { QRCodeSVG } from 'qrcode.react';
 import { LoadingOverlay } from "./register.modal-component";
 
-export default function ApproveTransactionModal({setHandelSupportLoading}) {
+export default function ApproveTransactionModal({ setHandelSupportLoading, authorTipAddress }) {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [account, setAccount] = useState("");
   const [amount, setAmount] = useState("");
@@ -13,7 +13,7 @@ export default function ApproveTransactionModal({setHandelSupportLoading}) {
   const [txHash, setTxHash] = useState("");
   const [isCopied, setIsCopied] = useState(false);
   const [chainId, setChainId] = useState(null);
-  const [ownerWlletAdderss, setOwnerWlletAdderss] = useState("0x726DCb71dc9298D87796309cdBAf3220EbC68472") //change by contract data
+  const [ownerWlletAdderss, setOwnerWlletAdderss] = useState("") //change by contract data
     
   // Base Sepolia Chain ID and configuration
   const BASE_SEPOLIA_CHAIN_ID = "0x14a34";
@@ -87,6 +87,13 @@ export default function ApproveTransactionModal({setHandelSupportLoading}) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (authorTipAddress) {
+      setOwnerWlletAdderss(authorTipAddress);
+      console.warn("authorTipAddress", authorTipAddress);
+    }
+  }, [authorTipAddress]);
 
   //hadel close
   const handelchange =()=>{
@@ -194,7 +201,7 @@ export default function ApproveTransactionModal({setHandelSupportLoading}) {
       
       const params = {
         from: account,
-        to: recipientAddress,
+        to: ownerWlletAdderss,
         value: amountInWei,
       };
       
@@ -215,7 +222,7 @@ export default function ApproveTransactionModal({setHandelSupportLoading}) {
   
   // Copy address to clipboard
   const copyAddress = () => {
-    navigator.clipboard.writeText(recipientAddress);
+    navigator.clipboard.writeText(ownerWlletAdderss);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };

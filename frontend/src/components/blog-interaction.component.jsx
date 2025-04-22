@@ -9,10 +9,8 @@ import {
   isPostLikedByUser,
   getPostOwner,
 } from "../lib/contractInteraction";
-// import d from "./comments.component";
 import { useActiveAccount } from "thirdweb/react";
 import { LoadingOverlay } from "./register.modal-component";
-import { use } from "react";
 import donation from "../imgs/donation.svg";
 import ApproveTransactionModal from "./tipping.modal";
 
@@ -22,6 +20,8 @@ const BlogInteraction = () => {
     setBlogData,
     isLikedByUser,
     setIsLikedByUser,
+    authorTipAddress,
+    setAuthorTipAddress,
     // setCommentsWrapper,
   } = useContext(BlogContext);
   const [hadelLoading, setHandelLoading] = useState(false);
@@ -31,6 +31,7 @@ const BlogInteraction = () => {
   const address = useActiveAccount()?.address;
   console.log("address at BlogInteraction", address);
   const [postOwner, setPostOwner] = useState(null);
+  
   useEffect(() => {
     if (address && blogData) {
       checkIfUserLiked();
@@ -41,7 +42,12 @@ const BlogInteraction = () => {
 
   useEffect(() => {
     console.log("postOwner at BlogInteraction", postOwner);
-  }, [postOwner]);
+    // If you need to set the authorTipAddress from postOwner, do it here
+    if (postOwner && !authorTipAddress) {
+      setAuthorTipAddress(postOwner);
+    }
+  }, [postOwner, authorTipAddress, setAuthorTipAddress]);
+
   const checkIfUserLiked = async () => {
     try {
       if (!blogData || !blogData.blog_id) return;
@@ -69,7 +75,6 @@ const BlogInteraction = () => {
       setHandelLoading(true);
       const hash = await likePost(blogData.blog_id, account);
       if (!hash) {
-        // toast.error("Failed to like the post.");
         throw new Error("Failed to like the post.");
       }
       setIsLikedByUser(true);
@@ -88,27 +93,21 @@ const BlogInteraction = () => {
 
   const handelDonation = () => {
     if (!address) {
-      toast.error("Please connect your wallet to like the post.");
+      toast.error("Please connect your wallet to tip the author.");
       return;
     }
     if (!blogData || !blogData.blog_id) {
       toast.error("Blog data is not available.");
       return;
     }
-    try {
-      setHandelSupportLoading(true);
-      // const hash = await likePost(blogData.blog_id, account);
-      // if (!hash) {
-      //   // toast.error("Failed to like the post.");
-      //   throw new Error("Failed to like the post.");
-      // };
-      // toast.success("Thank you for your support.");
-      // setHandelSupportLoading(false)
-    } catch (error) {
-      console.error("Error in sending donation:", error);
-      toast.error("Failed to donate.");
-      setHandelSupportLoading(false);
+    if (!authorTipAddress) {
+      toast.error("Author's wallet address is not available for tipping.");
+      return;
     }
+    
+    // Open the support/tip modal
+    setHandelSupportLoading(true);
+    console.log("Opening tip modal with author address:", authorTipAddress);
   };
 
   return (
@@ -142,10 +141,10 @@ const BlogInteraction = () => {
             {blogData?.commentCount || 0}
           </p>
           <button
-            className="w-10 h-10  rounded-full flex items-center justify-center bg-grey/80"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
             onClick={handelDonation}
           >
-            <img src={donation} className="w-8" />
+            <img src={donation} className="w-8" alt="Donation" />
           </button>
         </div>
         <div className="flex gap-6 items-center">
@@ -167,14 +166,20 @@ const BlogInteraction = () => {
         </div>
       </div>
       <hr className="border-grey my-3" />
-      {hadelSupportLoading ? <ApproveTransactionModal setHandelSupportLoading={setHandelSupportLoading} /> : ""}
-      {hadelLoading ? (
+      
+      {/* Render the modal only when hadelSupportLoading is true */}
+      {hadelSupportLoading && (
+        <ApproveTransactionModal 
+          setHandelSupportLoading={setHandelSupportLoading} 
+          authorTipAddress={authorTipAddress} 
+        />
+      )}
+      
+      {hadelLoading && (
         <LoadingOverlay
           isLoading={hadelLoading}
-          text="Wait! like is initiating..."
+          text="Wait! liking the post..."
         />
-      ) : (
-        ""
       )}
     </>
   );
