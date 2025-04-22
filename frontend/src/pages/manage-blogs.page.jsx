@@ -1,146 +1,131 @@
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../App";
-import { filterPaginationData } from "../common/filter-pagination-data";
+import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { Search } from 'lucide-react';
 import InPageNavigation from "../components/inpage-navigation.component";
 import Loader from "../components/loader.component";
 import NoDataMessage from "../components/nodata.component";
 import AnimationWrapper from "../common/page-animation";
-import { ManagePublishBlogCard, ManageDraftBlogPost } from "../components/manage-blogcard.component";
-import LoadMoreDataBtn from "../components/load-more.component";
+import { ManagePublishBlogCard } from "../components/manage-blogcard.component";
 import { useSearchParams } from "react-router-dom";
-
+import { useAuth } from "../contexts/AuthContext";
 
 const ManageBlogs = () => {
-    let { userAuth: { access_token } } = useContext(UserContext);
-
+    const { isLoggedIn, userAddress, userName } = useAuth();
     const [blogs, setBlogs] = useState(null);
-    const [drafts, setDrafts] = useState(null);
-    const [query, setQuery] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    let activeTab = useSearchParams()[0].get("tab")
-    
+    let [searchParams] = useSearchParams();
+    let activeTab = searchParams.get("tab");
 
-    const getBlogs = async ({ page, draft, deletedDocCount = 0 }) => {
-        console.log("Calling API with:", { page, draft, query, deletedDocCount });
-        
-        await axios.post(import.meta.env.VITE_SERVER_URL + "/user-written-blogs", {
-            page, draft, query, deletedDocCount
-        }, {
-            headers: {
-                'Authorization': `Bearer ${access_token}`
+    const getBlogs = async (searchQuery = null) => {
+        setIsLoading(true);
+
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_SERVER_URL}/api/search-blogs`,
+                {
+                    params: {
+                        keyword: searchQuery || userAddress,
+                    },
+                }
+            );
+
+            console.log("API response type:", typeof response.data);
+            console.log("API response:", response.data);
+
+            // Extract blogs array from the response object
+            let blogsData = [];
+
+            if (Array.isArray(response.data)) {
+                blogsData = response.data;
+            } else if (response.data && response.data.blogs && Array.isArray(response.data.blogs)) {
+                blogsData = response.data.blogs;
+            } else if (response.data && response.data.results && Array.isArray(response.data.results)) {
+                blogsData = response.data.results;
             }
-        })
-        .then(async ({ data }) => {
-            console.log("Raw API response:", data);
-            
-            let formatedData = await filterPaginationData({
-                state: draft ? drafts : blogs,
-                data: data.blogs,
-                page,
-                user: access_token,
-                countRoute: "/user-written-blogs-count",
-                data_to_send: { draft, query, deletedDocCount }  // Pass deleteDocCount here
-            });
-            
-            console.log("Formatted data:", formatedData);
-            
-            if (draft) {
-                setDrafts(formatedData);
-            } else {
-                setBlogs(formatedData);
-            }
-        })
-        .catch(err => {
-            console.log("API error:", err);
-        });
+
+            console.log("Processed blogs data:", blogsData);
+            setBlogs(blogsData);
+
+        } catch (err) {
+            console.error("Failed to fetch blogs:", err);
+            setBlogs([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleSearch = (e) => {
-        let searchQuery = e.target.value;
-        setQuery(searchQuery);
-        if (e.keyCode === 13 && searchQuery.length) {
-            setBlogs(null);
-            setDrafts(null);
+        if (e.keyCode === 13 && searchInput.trim().length) {
+            getBlogs(searchInput);
         }
     };
 
     const handleChange = (e) => {
-        if (!e.target.value.length) {
-            setQuery("");
-            setBlogs(null);
-            setDrafts(null);
+        const value = e.target.value;
+        setSearchInput(value);
+
+        // If search field is cleared, reset to the user's blogs
+        if (!value.trim().length) {
+            getBlogs();
         }
     };
 
-    // Split the effects to avoid dependency cycles
+    // Initial data fetch when component mounts
     useEffect(() => {
-        if (access_token && blogs === null) {
-            getBlogs({ page: 1, draft: false });
+        if (isLoggedIn) {
+            getBlogs();
         }
-    }, [access_token, blogs, query]);
-
-    useEffect(() => {
-        if (access_token && drafts === null) {
-            getBlogs({ page: 1, draft: true });
-        }
-    }, [access_token, drafts, query]);
+    }, [isLoggedIn, userAddress]);
 
     return (
         <>
-            <h1 className="max-md:hidden">Manage Blogs</h1>
+            <h1 className="max-md:hidden text-4xl pt-5 text-dark-grey tracking-tight leading-tight">
+                Welcome @{userName}
+            </h1>
+
             <Toaster />
             <div className="relative max-md:mt-5 md:mt-8 mb-10">
-                <input 
-                    type="search" 
-                    className="w-full bg-grey p-4 pl-12 pr-6 rounded-full placeholder:text-dark-grey" 
-                    placeholder="Search blogs" 
-                    onChange={handleChange} 
+                <input
+                    type="search"
+                    className="w-full bg-grey p-4 pl-12 pr-6 rounded-full placeholder:text-dark-grey"
+                    placeholder="Search blogs"
+                    value={searchInput}
+                    onChange={handleChange}
                     onKeyDown={handleSearch}
                 />
                 <Search className="absolute right-[10%] md:pointer-events-none md:left-5 top-1/2 -translate-y-1/2 text-xl text-dark-grey" />
             </div>
 
-            <InPageNavigation routes={["Published Blogs", "Drafts"]} defaultActiveIndex={ activeTab != 'draft' ? 0 : 1 }>
-                {
-                    // Published blogs
-                    blogs === null ? <Loader /> :
-                    blogs.results.length ? 
+            <InPageNavigation
+                routes={["Published Blogs"]}
+                defaultActiveIndex={activeTab !== 'draft' ? 0 : 1}
+            >
+                {/* Published blogs */}
+                {isLoading ? (
+                    <Loader />
+                ) : !blogs ? (
+                    <Loader />
+                ) : blogs.length === 0 ? (
+                    <NoDataMessage message="No published blogs available" />
+                ) : (
                     <>
-                        {
-                            blogs.results.map((blog, i) => {
-                                return (
-                                    <AnimationWrapper key={i} transition={{ delay: i * 0.04 }}>
-                                        <ManagePublishBlogCard blog={{...blog, index:i, setStateFunc: setBlogs}} />
-                                    </AnimationWrapper>
-                                );
-                            })
-                        }
-                        <LoadMoreDataBtn state={blogs} fetchDataFun={getBlogs} additionalparam={{draft:false, deletedDocCount: blogs.deletedDocCount}} />
-                    </> :
-                    <NoDataMessage message={"No published blogs available"} />
-                }
+                        {blogs.map((blog, i) => (
+                            <AnimationWrapper key={blog.blog_id || i} transition={{ delay: i * 0.04 }}>
+                                <ManagePublishBlogCard
+                                    blog={{ ...blog, index: i, setStateFunc: setBlogs }}
+                                />
+                            </AnimationWrapper>
+                        ))}
+                    </>
+                )}
 
-                {
-                    // Draft blogs
-                    drafts === null ? <Loader /> :
-                    drafts.results.length ? 
-                    <>
-                        {
-                            drafts.results.map((blog, i) => {
-                                return (
-                                    <AnimationWrapper key={i} transition={{ delay: i * 0.04 }}>
-                                        <ManageDraftBlogPost blog={{...blog, index:i, setStateFunc: setDrafts}} />
-                                    </AnimationWrapper>
-                                );
-                            })
-                        }
-                        <LoadMoreDataBtn state={drafts} fetchDataFun={getBlogs} additionalparam={{draft:true, deletedDocCount: drafts.deletedDocCount}} />
-                    </> :
-                    <NoDataMessage message={"No draft blogs available"} />
-                }
+                {/* Drafts tab */}
+                {activeTab === 'draft' && (
+                    <NoDataMessage message="No draft blogs available" />
+                )}
             </InPageNavigation>
         </>
     );
