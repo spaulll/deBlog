@@ -5,7 +5,8 @@ contract UserProfile {
     // *************************
     // *** Event Definitions ***
     // *************************
-    event UserProfileCreated(address indexed userAddress, string username);
+    event UserProfileCreated(address indexed userAddress, string username, string bio, string avatarUri);
+    event UserProfileEdited(address indexed userAddress, string username, string bio, string avatarUri, address tipWalletAddress);
 
     // *************************
     // *** Data Structures   ***
@@ -67,7 +68,7 @@ contract UserProfile {
         usernameExists[usernameHash] = true;
         isRegistered[msg.sender] = true;
 
-        emit UserProfileCreated(msg.sender, _username);
+        emit UserProfileCreated(msg.sender, _username, _bio, _avatarUri);
     }
 
     /// @notice Edit an existing user profile.
@@ -103,6 +104,8 @@ contract UserProfile {
         users[msg.sender].tipWalletAddress = _tipWalletAddress;
         usernameToAddress[_username] = msg.sender;
         usernameExists[newUsernameHash] = true;
+
+        emit UserProfileEdited(msg.sender, _username, _bio, _avatarUri, _tipWalletAddress);
     }
 
     /// @notice Fetch a user's profile.
