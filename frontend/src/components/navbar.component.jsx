@@ -15,7 +15,7 @@ import {
 import { useActiveAccount } from "thirdweb/react";
 import { useAuth } from "../contexts/AuthContext";
 import { use } from "react";
-import { toast, Toaster } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
 import { ErrorModal, LoadingOverlay, SuccessModal } from "./register.modal-component";
 
 const Navbar = () => {
@@ -128,7 +128,7 @@ const Navbar = () => {
 
   return (
     <>
-      <Toaster />
+      <ToastContainer position="bottom-right" />
       <nav className="navbar z-50">
         <Link to="/" className="flex-none w-11 md:w-16">
           <img src={logo} className="w-full rounded-2xl" alt="Logo" />

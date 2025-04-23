@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { getDay } from "../common/date";
 import { UserContext } from "../App";
-import { toast, Toaster } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
 import CommentField from "./comment-field.component";
 
 const CommentCard = ({ index, leftVal, commentData }) => {
@@ -30,7 +30,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
   return (
     <>
-      <Toaster />
+      <ToastContainer position="bottom-right" />
       <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px ` }}>
         <div className="my-5 p-6 rounded-md border border-grey">
           <div className="flex gap-3 items-center mb-8 pe-3 bg-purple/[10%] rounded-3xl p-2">

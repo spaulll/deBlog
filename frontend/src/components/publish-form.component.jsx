@@ -1,5 +1,5 @@
 import AnimationWrapper from "../common/page-animation";
-import { toast, Toaster } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
 import { X } from "lucide-react";
 import { useContext, useEffect, useState, useRef } from "react";
 import { EditoContext } from "../pages/editor.pages";
@@ -155,7 +155,7 @@ const PublishEditor = () => {
     <>
       <AnimationWrapper>
         <section className="w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4">
-          <Toaster />
+        <ToastContainer position="bottom-right" />
           <button
             className=" w-12 h-12 absolute right-[5vw] z-10 top-[5%] lg:top-[10%]"
             onClick={handelCloseEvent}

@@ -1,7 +1,7 @@
 // CommentField.jsx
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
-import { Toaster, toast } from "react-hot-toast";
+import { ToastContainer, toast } from "react-toastify";
 import { BlogContext } from "../pages/blog.page";
 import axios from "axios";
 
@@ -104,7 +104,7 @@ const CommentField = ({ action, index = undefined, replyingTo, setReplying = und
 
   return (
     <>
-      <Toaster />
+      <ToastContainer position="bottom-right" />
       <textarea
         value={comment}
         placeholder="What do you think?"

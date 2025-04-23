@@ -1,7 +1,7 @@
 import { KeyRound } from "lucide-react";
 import AnimationWrapper from "../common/page-animation"
 import InputBox from "../components/input.component";
-import {toast, Toaster} from "react-hot-toast"
+import { ToastContainer, toast } from "react-toastify";
 import { useContext, useRef } from "react";
 import axios from "axios"
 import {UserContext} from "../App"
@@ -51,7 +51,7 @@ const ChangePassword = () =>{
         <>
         
         <AnimationWrapper>
-        <Toaster />
+        <ToastContainer position="bottom-right" />
 
             <form ref={changePasswordForm} >
                 <h1 className="max-md:hidden">Change password</h1>

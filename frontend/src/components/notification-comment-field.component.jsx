@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Toaster } from "react-hot-toast"
+import { ToastContainer} from "react-toastify";
 import { UserContext } from "../App";
 
 const NotificatioCommentField = ({_id, blog_author, index= undefined, replyingTo= undefined, setReplying, notification_id, notificationData}) => {
@@ -14,7 +14,7 @@ const NotificatioCommentField = ({_id, blog_author, index= undefined, replyingTo
     
         return (
     <>
-      <Toaster />
+      <ToastContainer position="bottom-right" />
       <textarea
         value={comment}
         placeholder="leave a reply..."
