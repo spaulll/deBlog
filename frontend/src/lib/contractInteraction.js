@@ -299,7 +299,7 @@ const getPostOwner = async (blogIdHash) => {
     }
 }
 
-const addCommentToContract = async (blogIdHash, comment) => {
+const addCommentToContract = async (blogIdHash, comment, account) => {
     if (!blogIdHash) throw new Error("Something went wrong");
     try {
         const transaction = prepareContractCall({
@@ -307,7 +307,7 @@ const addCommentToContract = async (blogIdHash, comment) => {
             method: "addComment",
             params: [blogIdHash, comment],
         });
-        const receipt = await sendAndConfirmTransaction({ transaction });
+        const receipt = await sendAndConfirmTransaction({ transaction, account });
         return receipt.transactionHash;
     } catch (error) {
         console.error(error);
