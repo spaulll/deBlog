@@ -30,6 +30,21 @@ contract UserProfile {
     mapping(address => bool) public isRegistered;
     mapping(string => address) public usernameToAddress;
 
+    // The address of the blog contract that interacts with this contract.
+    address public blogContractAddress;
+    // *************************
+    // *** Modifiers         ***
+    // *************************
+    modifier onlyBlogContract() {
+        require(msg.sender == blogContractAddress, "Only Blog contract can call this function");
+        _;
+    }
+
+    modifier onlyProfileOwner() {
+        require(msg.sender == users[msg.sender].userAddress, "Only the profile owner can call this function");
+        _;
+    }
+
     // *************************
     // *** Core Functions    ***
     // *************************
@@ -45,7 +60,7 @@ contract UserProfile {
         string[] calldata _socialLinks
     ) external {
         // Ensure username is nonempty and shorter than 10 characters.
-        require(bytes(_username).length > 0 && bytes(_username).length < 10, "Username cannot be empty or longer than 10 characters");
+        require(bytes(_username).length > 0 && bytes(_username).length <= 10, "Username cannot be empty or longer than 10 characters");
         require(bytes(users[msg.sender].username).length == 0, "User already exists");
 
         // Use the hash of the username for checking uniqueness.
@@ -81,7 +96,7 @@ contract UserProfile {
         string calldata _bio, 
         string calldata _avatarUri, 
         address _tipWalletAddress
-    ) external {
+    ) external onlyProfileOwner {
         require(bytes(_username).length > 0, "Username cannot be empty");
         require(bytes(users[msg.sender].username).length > 0, "User does not exist");
         require(
@@ -126,9 +141,18 @@ contract UserProfile {
     /// @notice update post count of a user.
     /// @param _userAddress The address of the user.
     /// @param _postCount The new post count.
-    function updatePostCount(address _userAddress, uint32 _postCount) external {
+    function updatePostCount(address _userAddress, uint32 _postCount) external  onlyBlogContract {
         require(bytes(users[_userAddress].username).length > 0, "User does not exist");
         users[_userAddress].postCount = _postCount;
+    }
+
+    /// @notice update blog contract address.
+    /// @param _blogContractAddress The address of the blog contract.
+    /// @dev This function can only be called once to set the blog contract address.
+    function updateBlogContractAddress(address _blogContractAddress) external onlyProfileOwner {
+        require(_blogContractAddress != address(0), "Invalid blog contract address");
+        require(blogContractAddress == address(0), "Blog contract address already set");
+        blogContractAddress = _blogContractAddress;
     }
 }
 
