@@ -1,46 +1,61 @@
+// comment-card.component.jsx
 import { useContext, useState } from "react";
-import { getDay } from "../common/date";
-import { UserContext } from "../App";
-import { ToastContainer, toast } from "react-toastify";
+import { Toaster } from "react-hot-toast";
 import CommentField from "./comment-field.component";
+import moment from "moment";
+import { Link } from "react-router-dom";
 
 const CommentCard = ({ index, leftVal, commentData }) => {
-  const {
-    comment,
-    commented_by: {
-      personal_info: { profile_img, fullname, username },
-    },
-    commentedAt,
-    _id,
-  } = commentData;
+  // Extract data from the commentData structure
+  const comment = commentData?.comment || "";
+  const commentedBy = commentData?.commented_by || {};
+  const personalInfo = commentedBy?.personal_info || {};
+  
+  const profile_img = personalInfo?.profile_img || "";
+  const username = personalInfo?.username || "";
+  const commenter_address = personalInfo?.commenter_address || "";
+  
+  const commentedAt = commentData?.commentedAt || "";
+  const blog_id = commentData?.blog_id || "";
 
-  const {
-    userAuth: { access_token },
-  } = useContext(UserContext);
+  console.log("commentData at comment card", commentData);
 
   const [isReplying, setIsReplying] = useState(false);
 
-  const handleReplyClick = () => {
-    if (!access_token) {
-      
-      return toast.error("Please login first to reply");;
-    }
-    setIsReplying(preVal => !preVal);
+  // Format the date manually since it's not a Unix timestamp
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    dateString = moment.unix(dateString).format("MMM DD, h:mA")
+    return dateString;
   };
 
   return (
     <>
-      <ToastContainer position="bottom-right" />
-      <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px ` }}>
+      <Toaster />
+      <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px` }}>
         <div className="my-5 p-6 rounded-md border border-grey">
-          <div className="flex gap-3 items-center mb-8 pe-3 bg-purple/[10%] rounded-3xl p-2">
-            <img src={profile_img} alt={username} className="w-6 h-6 rounded-full" />
-            <p className="line-clamp-1">{fullname} @{username}</p>
-            <p className="min-w-fit">{getDay(commentedAt)}</p>
-          </div>
-
-          <p className="font-gelasio text-xl ml-10">{comment}</p>
-          {/*this is the reply and hide reply buttom and reply card part thats why it is commented */}
+          <Link to={`/user/${username}`}>
+            <div className="flex gap-3 items-center mb-8 pe-3 bg-purple/[10%] rounded-3xl p-2">
+              {profile_img ? (
+                <img src={profile_img} alt={username} className="w-6 h-6 rounded-full" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-300"></div> // Placeholder for missing image
+              )}
+              <p className="line-clamp-1">
+                @{username || "Unknown"}
+              </p>
+              <p className="min-w-fit">{formatDate(commentedAt)}</p>
+            </div>
+          </Link>
+          <p className="font-gelasio text-xl ml-10">
+            {comment.split('\n').map((line, i) => (
+              <span key={i}>
+                {line}
+                <br />
+              </span>
+            ))}
+          </p>
+          {/*this is the reply and hide reply button and reply card part thats why it is commented */}
           {/* <div className="flex gap-5 items-center mt-5">
             {commentData.isReplyLoaded && (
               <button className="btn-light">Hide replies</button>

@@ -1,33 +1,41 @@
-// CommentField.jsx
+// comment-field.component.jsx
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
-import { ToastContainer, toast } from "react-toastify";
+import { Toaster, toast } from "react-hot-toast";
 import { BlogContext } from "../pages/blog.page";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import { addCommentToContract } from "../lib/contractInteraction";
+import { useActiveAccount } from "thirdweb/react";
 
 const CommentField = ({ action, index = undefined, replyingTo, setReplying = undefined }) => {
   const {
     blogData,
     blogData: {
-      _id,
-      author: { _id: blog_author },
+      blog_id,
+      author: { author_address },
       comments,
       comments: { results: commentsArr },
-      activity,
-      activity: { total_comments, total_parent_comments },
+      commentCount
     },
     setBlogData,
     setTotalParentCommentsLoaded,
   } = useContext(BlogContext);
-  let {
-    userAuth: { access_token, username, profile_img, fullname },
-  } = useContext(UserContext);
+  // let {
+  //   userAuth: { access_token, username, profile_img, fullname },
+  // } = useContext(UserContext);
+
+  const { userName: username, isLoggedIn, avatarUrl: profile_img, userAddress } = useAuth();
 
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const account = useActiveAccount();
+  const address = account?.address || userAddress;
+  console.warn("address at comment-field", address)
+
   const handleComment = async () => {
-    if (!access_token) {
+    if (!isLoggedIn) {
       toast.error("Please login to comment");
       return;
     }
@@ -38,57 +46,35 @@ const CommentField = ({ action, index = undefined, replyingTo, setReplying = und
     }
 
     setIsSubmitting(true);
-    await axios
-      .post(
-        `${import.meta.env.VITE_SERVER_URL}/add-comment`,
-        {
-          _id,
-          blog_author,
-          comment: comment
-          // comment: comment.trim(),
-          // replying_to: replyingTo,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${access_token}`,
-          },
-        }
-      )
-      .then(({data}) => {
+    await addCommentToContract(     // returns the transaction hash, comment contains the actual comment
+      blog_id,
+      comment,
+      account
+    )
+      .then(() => {
+        console.log("Comment response at comment-field", comment);
         setComment("");
-        data.commented_by = {
-          personal_info: { username, profile_img, fullname },
+        let newComment = {
+          blog_id: blog_id,
+          comment: comment,
+          commentedAt: new Date().toISOString(),
+          commented_by: {
+            personal_info: {
+              username,
+              profile_img,
+              commenter_address: address,
+            },
+          },
         };
+        
         let newCommentArr;
-        data.childrenLevel = 0;
-        newCommentArr = [data, ...commentsArr];
-        // if(replyingTo){
-        //   commentsArr[index].children.push(data._id)
-        //   data.childrenLevel = commentsArr[index].childrenLevel + 1;
-        //   data.parentIndex = index;
+        newCommentArr = [newComment, ...commentsArr];
 
-        //   commentsArr[index].isReplyLoaded = true;
-
-        //   commentsArr.splice(index + 1, 0, data);
-        //   newCommentArr = commentsArr;
-
-        // }else{
-
-          
-        // data.childrenLevel = 0;
-        // newCommentArr = [data, ...commentsArr];
-        // }
-        // let parentCommentIncrementVal = replyingTo? 0 : 1;
         let parentCommentIncrementVal = 1;
         setBlogData({
           ...blogData,
           comments: { ...comments, results: newCommentArr },
-          activity: {
-            ...activity,
-            total_comments: total_comments + 1,
-            total_parent_comments:
-              total_parent_comments + parentCommentIncrementVal,
-          },
+          commentCount: commentCount + 1,
         });
 
         setTotalParentCommentsLoaded(
@@ -104,7 +90,7 @@ const CommentField = ({ action, index = undefined, replyingTo, setReplying = und
 
   return (
     <>
-      <ToastContainer position="bottom-right" />
+      <Toaster />
       <textarea
         value={comment}
         placeholder="What do you think?"
@@ -112,9 +98,8 @@ const CommentField = ({ action, index = undefined, replyingTo, setReplying = und
         onChange={(e) => setComment(e.target.value)}
       />
       <button
-        className={`mt-2 p-2 btn-dark ${
-          isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`mt-2 p-2 btn-dark ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         onClick={handleComment}
       >
         {isSubmitting ? "Submitting..." : action}
