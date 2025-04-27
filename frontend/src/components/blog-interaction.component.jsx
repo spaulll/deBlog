@@ -22,7 +22,7 @@ const BlogInteraction = () => {
     setIsLikedByUser,
     authorTipAddress,
     setAuthorTipAddress,
-    // setCommentsWrapper,
+    setCommentsWrapper,
   } = useContext(BlogContext);
   const [hadelLoading, setHandelLoading] = useState(false);
   const [hadelSupportLoading, setHandelSupportLoading] = useState(false);
@@ -132,7 +132,7 @@ const BlogInteraction = () => {
 
           <button
             className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
-            // onClick={() => setCommentsWrapper((prev) => !prev)}
+            onClick={() => setCommentsWrapper((prev) => !prev)}
           >
             <MessageSquare />
           </button>
