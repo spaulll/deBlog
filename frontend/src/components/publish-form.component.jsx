@@ -163,7 +163,7 @@ const PublishEditor = () => {
             <X className="" />
           </button>
           <div className="max-w-[500px] center ">
-            <p className=" text-dark-grey mb-1">preview</p>
+            <p className=" text-dark-grey mb-1">Preview</p>
             <div className="w-full aspect-video rounded-lg overflow-hidden bg-grey mt-4">
               <img src={banner} />
             </div>
@@ -198,14 +198,14 @@ const PublishEditor = () => {
             </p>
 
             <p className="text-dark-grey mb-2 mt-9 ">
-              Topics-(Helps is searching and ranking your blog post)
+              Topics- (Helps other to find your blog)
             </p>
 
             <div className="relative input-box pl-2 py-2 pb-4">
               <input
                 type="text"
                 placeholder="Topics"
-                className=" sticky input-box bg-white top-0 left-0 pl-4 mb-3 focus:bg-white"
+                className=" sticky input-box bg-white top-0 left-0 pl-4 mb-3 focus:bg-white placeholder:text-dark-grey"
                 onKeyDown={handelKeyDown}
               />
               {tags.map((tag, i) => {
