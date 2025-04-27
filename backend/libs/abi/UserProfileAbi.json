@@ -59,6 +59,19 @@
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_blogContractAddress",
+				"type": "address"
+			}
+		],
+		"name": "updateBlogContractAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "_userAddress",
 				"type": "address"
 			},
@@ -87,10 +100,72 @@
 				"internalType": "string",
 				"name": "username",
 				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "bio",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avatarUri",
+				"type": "string"
 			}
 		],
 		"name": "UserProfileCreated",
 		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "userAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "username",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "bio",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avatarUri",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "tipWalletAddress",
+				"type": "address"
+			}
+		],
+		"name": "UserProfileEdited",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "blogContractAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
 	},
 	{
 		"inputs": [

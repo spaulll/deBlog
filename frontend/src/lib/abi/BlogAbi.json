@@ -2,122 +2,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "bytes32",
-				"name": "_blogIdHash",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "string",
-				"name": "_content",
-				"type": "string"
-			}
-		],
-		"name": "addComment",
-		"outputs": [
-			{
-				"internalType": "uint32",
-				"name": "commentId",
-				"type": "uint32"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_ipfsUri",
-				"type": "string"
-			},
-			{
-				"internalType": "string[]",
-				"name": "_tags",
-				"type": "string[]"
-			},
-			{
-				"internalType": "bytes32",
-				"name": "_blogIdHash",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "string",
-				"name": "title",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "description",
-				"type": "string"
-			}
-		],
-		"name": "createPost",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_blogIdHash",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "uint32",
-				"name": "_commentId",
-				"type": "uint32"
-			},
-			{
-				"internalType": "string",
-				"name": "_newContent",
-				"type": "string"
-			}
-		],
-		"name": "editComment",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_blogIdHash",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "string",
-				"name": "_newContent",
-				"type": "string"
-			}
-		],
-		"name": "editPost",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_blogIdHash",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "bool",
-				"name": "like",
-				"type": "bool"
-			}
-		],
-		"name": "toggleLikeDislike",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "address",
 				"name": "_userProfileContractAddress",
 				"type": "address"
@@ -139,6 +23,67 @@
 				"indexed": false,
 				"internalType": "string",
 				"name": "username",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avatarUri",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint32",
+				"name": "postId",
+				"type": "uint32"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint32",
+				"name": "commentId",
+				"type": "uint32"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "content",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint32",
+				"name": "timestamp",
+				"type": "uint32"
+			}
+		],
+		"name": "CommentAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "userAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "username",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "avatarUri",
 				"type": "string"
 			},
 			{
@@ -271,6 +216,30 @@
 		"inputs": [
 			{
 				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "_content",
+				"type": "string"
+			}
+		],
+		"name": "addComment",
+		"outputs": [
+			{
+				"internalType": "uint32",
+				"name": "commentId",
+				"type": "uint32"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
 				"name": "",
 				"type": "bytes32"
 			},
@@ -289,6 +258,80 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_ipfsUri",
+				"type": "string"
+			},
+			{
+				"internalType": "string[]",
+				"name": "_tags",
+				"type": "string[]"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "createPost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint32",
+				"name": "_commentId",
+				"type": "uint32"
+			},
+			{
+				"internalType": "string",
+				"name": "_newContent",
+				"type": "string"
+			}
+		],
+		"name": "editComment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "string",
+				"name": "_newContent",
+				"type": "string"
+			}
+		],
+		"name": "editPost",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -568,6 +611,24 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "_blogIdHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "bool",
+				"name": "like",
+				"type": "bool"
+			}
+		],
+		"name": "toggleLikeDislike",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
