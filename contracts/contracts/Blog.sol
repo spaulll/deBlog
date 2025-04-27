@@ -15,6 +15,7 @@ contract Blog {
     event PostCreated(
         address indexed userAddress, 
         string username,
+        string avatarUri,
         uint32 postId, 
         string ipfsUri, 
         uint32 timestamp, 
@@ -38,7 +39,16 @@ contract Blog {
         uint32 likes, 
         uint32 dislikes
     );
-
+    event CommentAdded(
+        address indexed userAddress, 
+        string username,
+        string avatarUri,
+        uint32 postId,
+        bytes32 blogIdHash, 
+        uint32 commentId, 
+        string content, 
+        uint32 timestamp
+    );
     // *************************
     // *** Data Structures   ***
     // *************************
@@ -147,7 +157,7 @@ contract Blog {
             blogIdHash: _blogIdHash
         });
 
-        emit PostCreated(msg.sender, user.username, postId, _ipfsUri, uint32(block.timestamp), _tags, _blogIdHash, title, description);
+        emit PostCreated(msg.sender, user.username, user.avatarUri, postId, _ipfsUri, uint32(block.timestamp), _tags, _blogIdHash, title, description);
     }
 
     /// @notice Edit an existing post using its blogIdHash.
@@ -263,6 +273,9 @@ contract Blog {
         });
 
         post.commentCount += 1;
+        UserProfile.User memory user = userProfile.getUserProfile(msg.sender);
+        
+        emit CommentAdded(msg.sender, user.username, user.avatarUri, postIndex, _blogIdHash, commentId, _content, uint32(block.timestamp));
     }
 
     /// @notice Edit an existing comment on a post using its blogIdHash.
