@@ -1,6 +1,8 @@
 import { gql, request } from 'graphql-request';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const url = 'https://api.studio.thegraph.com/query/108354/deblog-v2/version/latest';
+const url = process.env.BLOGS_SUBGRAPH_URL;
 const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
 
 function truncateAddress(address) {
@@ -109,7 +111,7 @@ async function transformSearchResults(posts, postReacteds) {
           personal_info: {
             fullname: truncateAddress(post.userAddress),
             username: post.username,
-            profile_img: "https://api.dicebear.com/9.x/adventurer/svg?seed=sd",
+            profile_img: post.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress}`,
           },
         },
         publishedAt: new Date(post.timestamp * 1000),
