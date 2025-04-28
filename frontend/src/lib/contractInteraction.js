@@ -243,8 +243,7 @@ const isPostLikedByUser = async (blogIdHash, address) => {
             method: "postIdsByBlogIdHash",
             params: [blogIdHash],
         });
-
-        if (!blogId) throw new Error("Failed to fetch blogId");
+        console.error("blogId:", blogId);
 
         // Fetch post owner using blogIdHash
         const postOwner = await readContract({
