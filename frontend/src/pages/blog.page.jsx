@@ -227,7 +227,7 @@ const BlogPage = () => {
                     />
                   ) : (
                     <img
-                      src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${author_address}`}
+                      src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${author_address.toLowerCase()}`}
                       alt=""
                       className="w-12 h-12 rounded-full"
                     />

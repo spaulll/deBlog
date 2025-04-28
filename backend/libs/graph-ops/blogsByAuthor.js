@@ -86,7 +86,7 @@ async function transformLatestBlogs(latestBlogs, postReacteds) {
           personal_info: {
             fullname: truncateAddress(post.userAddress),
             username: post.username,
-            profile_img: post.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress}`,
+            profile_img: post.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress.toLowerCase()}`,
           },
         },
         publishedAt: new Date(post.timestamp * 1000),

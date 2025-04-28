@@ -8,7 +8,7 @@ const formatUserProfile = (userProfile) => {
       fullname: userProfile.userAddress.substring(0, 4) + "..." + userProfile.userAddress.substring(userProfile.userAddress.length - 4),
       username: userProfile.username,
       bio: userProfile.bio,
-      profile_img: userProfile.avatarUrl || "https://api.dicebear.com/9.x/adventurer/svg?seed=error",
+      profile_img: userProfile.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${userProfile.userAddress.toLowerCase()}`,
       tip_address: userProfile.tipWalletAddress
     },
     social_links: {

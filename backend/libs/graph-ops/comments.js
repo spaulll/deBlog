@@ -32,7 +32,7 @@ async function transformComments(comments) {
             commented_by: {
                 personal_info: {
                     username: comment.username,
-                    profile_img: comment.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${comment.userAddress}`,
+                    profile_img: comment.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${comment.userAddress.toLowerCase()}`,
                     commenter_address: comment.userAddress,
                 },
             },

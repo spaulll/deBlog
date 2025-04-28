@@ -90,7 +90,7 @@ const Navbar = () => {
       fetchAvatarUrl(address).then((avatarUrl) => {
         const finalAvatarUrl =
           avatarUrl ||
-          "https://api.dicebear.com/9.x/adventurer/svg?seed=default";
+          `https://api.dicebear.com/9.x/adventurer/svg?seed=${address.toLowerCase()}`;
 
         setAvatarUrl(finalAvatarUrl); // Update global state
         setLocalAvatar(finalAvatarUrl); // Update local state
@@ -199,7 +199,7 @@ const Navbar = () => {
                       alt="User Avatar"
                       onError={(e) =>
                         (e.target.src =
-                          "https://api.dicebear.com/9.x/adventurer/svg?seed=default")
+                          `https://api.dicebear.com/9.x/adventurer/svg?seed=${userAddress.toLowerCase()}`)
                       }
                     />
                   )}

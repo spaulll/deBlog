@@ -58,7 +58,7 @@ const getAvatar = async (address) => {
         return avatarUrl;
     } catch (error) {
         console.error(error);
-        return "https://api.dicebear.com/9.x/adventurer/svg?seed=error";
+        return `https://api.dicebear.com/9.x/adventurer/svg?seed=${address.toLowerCase()}`; 
     }
 };
 
