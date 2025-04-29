@@ -32,51 +32,53 @@ const SearchPage = () => {
       });
   };
 
-  // const fetchUsers = () => {
-  //   axios
-  //     .post(import.meta.env.VITE_SERVER_URL + "/search-users", {
-  //       query,
-  //     })
-  //     .then(async ({ data: { users } }) => {
-  //       setUsers(users);
-  //       // console.log(formatData)
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     });
-  // };
+  const fetchUsers = () => {
+    axios
+      .get(import.meta.env.VITE_SERVER_URL + "/api/search-users", {
+        params: {
+          query,
+        },
+      })
+      .then(({ data }) => {
+        setUsers(data.results);
+        console.log(data.results);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   useEffect(() => {
     resetState();
     searchBlogs();
-    // fetchUsers();
+    fetchUsers();
   }, [query]);
   const resetState = () => {
     setBlogData(null);
     setUsers(null);
   };
-  // const UserCardWrapper = () => {
-  //   return (
-  //     <>
-  //       {users == null ? (
-  //         <Loader />
-  //       ) : users.length ? (
-  //         users.map((user, i) => {
-  //           return (
-  //             <AnimationWrapper
-  //               key={i}
-  //               transation={{ duration: 1, delay: i * 0.08 }}
-  //             >
-  //               <UserCard user={user} />
-  //             </AnimationWrapper>
-  //           );
-  //         })
-  //       ) : (
-  //         <NoDataMessage message="no user found" />
-  //       )}
-  //     </>
-  //   );
-  // };
+  const UserCardWrapper = () => {
+    return (
+      <>
+        {users == null ? (
+          <Loader />
+        ) : users.length ? (
+          users.map((user, i) => {
+            return (
+              <AnimationWrapper
+                key={i}
+                transation={{ duration: 1, delay: i * 0.08 }}
+              >
+                <UserCard user={user} />
+              </AnimationWrapper>
+            );
+          })
+        ) : (
+          <NoDataMessage message="No user found" />
+        )}
+      </>
+    );
+  };
   return (
     <section className="h-cover flex justify-center gap-10">
       <div className="w-full">
@@ -106,16 +108,15 @@ const SearchPage = () => {
             )}
             {/* <LoadMoreDataBtn state={blogData} fetchDataFun={searchBlogs} /> */}
           </>
-          {/* <UserCardWrapper /> */}
+          <UserCardWrapper />
         </InPageNavigation>
       </div>
       <div className="min-w-[40%] lg:min-w-[350px] max-w-min border-1 border-grey pl-8 pt-3 max-md:hidden gap-1">
-        <div className="flex">
+        <div className="flex items-center gap-2 mb-8">
           <User className="m-1" />
-          <h1 className="font-medium text-xl mb-8">user related to search</h1>
-
+          <h1 className="font-medium text-xl">Profiles related to search query</h1>
         </div>
-        {/* <UserCardWrapper /> */}
+        <UserCardWrapper />
       </div>
     </section>
   );

@@ -8,6 +8,7 @@ import multer from "multer";
 import { uploadToIPFS, getIPFSUrl } from "./ipfsOps.js";
 import { keccak256 } from "thirdweb/utils"
 import { nanoid } from "nanoid";
+import { searchUserProfiles } from "./libs/graph-ops/userProfile.js";
 
 // GraphQL imports
 import { getLatestBlogs } from "./libs/graph-ops/latestBlogs.js";
@@ -372,6 +373,36 @@ app.post("/get-user-profile", async (req, res) => {
     });
 });
 
+app.get("/api/search-users", async (req, res) => {
+    const query = req.query.q || req.query.query || req.query.keyword;
+    console.log("Search query:", query);
+    if (!query) {
+        return res.status(400).json({ success: 0, message: "Query is required" });
+    }
+    if (query.length === 42 && query.startsWith("0x")) {
+        const data = await searchUserProfiles({ address: query });
+        if (!data) {
+            return res.status(500).json({ success: 0, message: "Internal Server Error." });
+        }
+        console.log("User:", data);
+        return res.status(200).json({
+            success: 1,
+            message: "User fetched successfully.",
+            results: data
+        });
+    } else {
+        const data = await searchUserProfiles({ username: query });
+        if (!data) {
+            return res.status(500).json({ success: 0, message: "Internal Server Error." });
+        }
+        console.log("Users:", data);
+        return res.status(200).json({
+            success: 1,
+            message: "Users fetched successfully.",
+            results: data
+        });
+    }
+});
 app.get("/api/get-comments", async (req, res) => {
     const blogId = req.query.blog_id;
     console.log("at get comment Blog ID:", blogId);
