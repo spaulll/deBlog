@@ -1,7 +1,7 @@
 // blog.page.jsx
 import axios from "axios";
 import { Loader } from "lucide-react";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import { getBlog, getUserProfile, getPostOwner } from "../lib/contractInteraction";
@@ -41,6 +41,9 @@ const BlogPage = () => {
   const [commentsWrapper, setCommentsWrapper] = useState(false);
   const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
   const [authorTipAddress, setAuthorTipAddress] = useState("");
+  const [tags, setTags] = useState([]);
+  const [fetchingSimilarBlogs, setFetchingSimilarBlogs] = useState(false);
+  const [currentTagIndex, setCurrentTagIndex] = useState(0);
 
   let {
     title,
@@ -78,7 +81,6 @@ const BlogPage = () => {
   };
 
   const fetchBlog = async () => {
-    
     try {
       // Get post owner from blockchain
       const ownerAddress = await getPostOwner(blog_id);
@@ -143,18 +145,9 @@ const BlogPage = () => {
         // Update blog data state
         setBlogData(blog);
 
-        // Fetch similar blogs if tags exist
+        // Store tags for later fetching
         if (ipfsContent.tags && ipfsContent.tags.length > 0) {
-          try {
-            const { data } = await axios.post(import.meta.env.VITE_SERVER_URL + "/search-blogs", {
-              tag: ipfsContent.tags[0],
-              limit: 6,
-              eliminate_blog: blog_id,
-            });
-            setSimilarBlog(data.blogs);
-          } catch (err) {
-            console.warn("Error fetching similar blogs:", err);
-          }
+          setTags(ipfsContent.tags);
         } else {
           console.log("ℹNo tags available to fetch similar blogs");
         }
@@ -169,6 +162,63 @@ const BlogPage = () => {
     }
   };
 
+  const fetchNextSimilarBlog = useCallback(async () => {
+    if (fetchingSimilarBlogs || currentTagIndex >= tags.length || !tags.length) {
+      return;
+    }
+
+    setFetchingSimilarBlogs(true);
+    try {
+      const currentTag = tags[currentTagIndex];
+      console.log(`Fetching similar blogs for tag: ${currentTag}`);
+      
+      const { data } = await axios.get(import.meta.env.VITE_SERVER_URL + "/api/search-blogs", {
+        params: {
+          keyword: currentTag,
+        }
+      });
+      
+      if (data && data.blogs) {
+        // Filter out the current blog
+        const filteredBlogs = data.blogs.filter(blog => blog.blog_id !== blog_id);
+        
+        setSimilarBlog(prevBlogs => {
+          // If this is the first tag being fetched, use the filtered blogs directly
+          if (!prevBlogs) {
+            return filteredBlogs;
+          }
+          
+          // Otherwise, merge and deduplicate
+          const existingIds = new Set(prevBlogs.map(blog => blog.blog_id));
+          const newBlogs = [...prevBlogs];
+          
+          filteredBlogs.forEach(blog => {
+            if (!existingIds.has(blog.blog_id)) {
+              newBlogs.push(blog);
+              existingIds.add(blog.blog_id);
+            }
+          });
+          
+          return newBlogs;
+        });
+      }
+      
+      // Move to the next tag
+      setCurrentTagIndex(prevIndex => prevIndex + 1);
+    } catch (err) {
+      console.warn("Error fetching similar blogs:", err);
+    } finally {
+      setFetchingSimilarBlogs(false);
+    }
+  }, [currentTagIndex, tags, fetchingSimilarBlogs, blog_id]);
+
+  // Fetch similar blogs immediately when tags are available
+  useEffect(() => {
+    if (!loading && tags.length > 0 && currentTagIndex < tags.length) {
+      fetchNextSimilarBlog();
+    }
+  }, [loading, tags, fetchNextSimilarBlog, currentTagIndex]);
+
   useEffect(() => {
     resetState();
     fetchBlog();
@@ -182,6 +232,9 @@ const BlogPage = () => {
     setCommentsWrapper(false);
     setTotalParentCommentsLoaded(0);
     setAuthorTipAddress("");
+    setTags([]);
+    setCurrentTagIndex(0);
+    setFetchingSimilarBlogs(false);
   };
 
   
@@ -262,26 +315,34 @@ const BlogPage = () => {
             </div>
             <BlogInteraction />
             
-            {similarBlog && similarBlog.length ? (
+            {(similarBlog && similarBlog.length > 0) ? (
               <>
                 <h1 className="text-2xl mt-14 mb-10 font-medium">
                   Similar Blogs
                 </h1>
-                <div className="flex flex-wrap gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
                   {similarBlog.map((blog, i) => {
                     let author = blog.author || {};
                     return (
                       <AnimationWrapper
-                        key={i}
+                        key={blog.blog_id || i}
                         transition={{ duration: 1, delay: i * 0.08 }}
                       >
-                        <BlogPostCard content={blog} author={author} />
+                        <div className="h-full">
+                          <BlogPostCard content={blog} author={author} />
+                        </div>
                       </AnimationWrapper>
                     );
                   })}
                 </div>
               </>
             ) : null}
+            
+            {fetchingSimilarBlogs && (
+              <div className="flex justify-center items-center py-4 mt-6">
+                <Loader size={24} className="animate-spin" />
+              </div>
+            )}
           </div>
         </BlogContext.Provider>
       )}
