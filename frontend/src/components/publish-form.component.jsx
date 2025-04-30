@@ -73,6 +73,25 @@ const PublishEditor = () => {
       e.target.value = "";
     }
   };
+
+  // Function to update cache after blog publish in backend
+  const invalidateBlogCache = async () => {
+    try {
+      await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/invalidate-blog-cache`, 
+        { operation: "invalidate" },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json", 
+          },
+        }
+      );
+      console.log("Blog cache invalidated successfully");
+    } catch (error) {
+      console.error("Failed to invalidate blog cache:", error);
+    }
+  };
+
   const publishBlog = (e) => {
     if (e.target.className.includes("disable")) {
       return;
@@ -123,6 +142,7 @@ const PublishEditor = () => {
             editBlog(blogUrl, tags, prev_Blog_id.current).then(() => {
               toast.dismiss(loadingToast);
               toast.success("Blog updated successfully.");
+              invalidateBlogCache(); // Invalidate the cache after editing the blog
               navigate(`/blog/${prev_Blog_id.current}`);
             }).catch((err) => {
               toast.dismiss(loadingToast);
@@ -134,6 +154,7 @@ const PublishEditor = () => {
             uploadBlog(blogUrl, tags, blogIdHash, title, des).then(() => {
               toast.dismiss(loadingToast);
               toast.success("Blog published successfully.");
+              invalidateBlogCache(); // Invalidate the cache after publishing the blog
               navigate(`/blog/${blogIdHash}`);
             }).catch((err) => {
               toast.dismiss(loadingToast);
