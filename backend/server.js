@@ -11,10 +11,10 @@ import { nanoid } from "nanoid";
 import { searchUserProfiles } from "./libs/graph-ops/userProfile.js";
 
 // GraphQL imports
-import { getLatestBlogs } from "./libs/graph-ops/latestBlogs.js";
+import { getLatestBlogs, invalidateBlogsCache, getCacheStats } from "./libs/graph-ops/latestBlogs.js";
 import { getTrendingBlogs } from "./libs/graph-ops/trendingBlogs.js";
 import { getBlogsOfAuthor } from "./libs/graph-ops/blogsByAuthor.js";
-import { getBlogsByKeywords } from "./libs/graph-ops/blogsByKeyword.js";
+import { getBlogsByKeywords, clearSearchCache, getCacheStats as searchCacheStats } from "./libs/graph-ops/blogsByKeyword.js";
 import { getUserProfile } from "./libs/contractInteraction.js";
 import { getComments } from "./libs/graph-ops/comments.js";
 
@@ -268,17 +268,110 @@ app.post("/create-blog", async (req, res) => {
     }
 })
 
-app.get("/latest-blogs", async (req, res) => {
-    const blogs = await getLatestBlogs();
-    if (!blogs) {
-        return res.status(500).json({ success: 0, message: "Internal Server Error." });
+app.post("/api/invalidate-blog-cache", async (req, res) => {
+    const jwt = req.cookies?.jwt ||"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIweDcyNkRDYjcxZGM5Mjk4RDg3Nzk2MzA5Y2RCQWYzMjIwRWJDNjg0NzIiLCJzdWIiOiIweDlCMkI1YmEzREJCNjU2RTA0QTVGNDRBQTQwYUMzNDEyRDNGQzBBQzUiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxNzMiLCJleHAiOjE3NDYwNzYwNTEsIm5iZiI6MTc0NTk4OTA0NCwiaWF0IjoxNzQ1OTg5NjUxLCJqdGkiOiIweGI0OWFlOTI1ZjMwNTU4YTk1ZTNkZTU4OTZmN2YwMDE3ZTA3MGJiOTE2YThhYzFlNjg0OTYxMzZjZTMyYmU2NDgiLCJjdHgiOnt9fQ.MHg0ZDdiNDM5MjlmNTg5ZDc1MDhlZmJjMDJhN2ZkZDgyZmVjMWVmZTBhZTVmMzlhNTBmNzM1YjQ3NTAxNjZhMmQ3NGRlMzdjMWFjMjRhMjliNDY4NTk1ZmU2NzJlNWNlYmVmYmIyNTc1YThkMzRjMWE1N2E0Yjk1MTFkMDJiZTVmOTFj" ;
+    if (!jwt) {
+        console.log("No JWT found in cookies");
+        return res.status(401).json({ success: 0, message: "Unauthorized" });
     }
-    console.log("Latest blogs:", blogs);
+    const authResult = await thirdwebAuth.verifyJWT({ jwt });   
+    if (!authResult.valid) {
+        console.log("Invalid JWT");
+        return res.status(401).json({ success: 0, message: "Unauthorized" });
+    }
+
+    const operation = req.body.operation;
+    console.log("Operation:", operation);
+
+    // Actually call the invalidation function
+    const invalidationResult = invalidateBlogsCache();
+    const searchInvalidationResult = clearSearchCache();
+    console.log("Cache invalidation result:", invalidationResult, searchInvalidationResult);
+
+    // Get cache stats after invalidation
+    const cacheStats = getCacheStats();
+    const searchCacheStat = searchCacheStats();
     return res.status(200).json({
         success: 1,
-        message: "Latest blogs fetched successfully.",
-        blogs
+        message: "Cache invalidated successfully. Next fetch will use fresh data including IPFS content.",
+        invalidationResult,
+        cacheStats,
+        searchCacheStat,
     });
+});
+
+app.get("/latest-blogs", async (req, res) => {
+    try {
+        // Pass the forceRefresh query parameter to getLatestBlogs
+        const forceRefresh = req.query.forceRefresh;
+        console.log("Force refresh:", forceRefresh);
+        
+        // Get cache stats before fetching to see if force refresh is pending
+        const cacheStatsBefore = getCacheStats();
+        console.log("Cache stats before fetch:", {
+            forceRefreshPending: cacheStatsBefore.forceRefreshPending,
+            totalKeys: cacheStatsBefore.keys.length
+        });
+        
+        // Set timeout longer than the function's internal timeout to ensure we get a response
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Blog fetching timed out after 15s')), 15000)
+        );
+        
+        // Race between fetch and timeout
+        const blogs = await Promise.race([
+            getLatestBlogs(forceRefresh),
+            timeoutPromise
+        ]);
+        
+        if (!blogs || !Array.isArray(blogs)) {
+            return res.status(500).json({ 
+                success: 0, 
+                message: "Failed to fetch blogs or invalid data format" 
+            });
+        }
+        
+        // Log how many blogs have banners for debugging
+        const blogsWithBanners = blogs.filter(blog => blog.banner && blog.banner !== "").length;
+        console.log(`Retrieved ${blogs.length} blogs, ${blogsWithBanners} with banners`);
+        
+        return res.status(200).json({
+            success: 1,
+            message: "Latest blogs fetched successfully.",
+            blogs,
+            count: blogs.length,
+            withBanners: blogsWithBanners
+        });
+    } catch (error) {
+        console.error("Error fetching latest blogs:", error);
+        
+        // Try to get cached data as fallback
+        try {
+            const cacheStats = getCacheStats();
+            const cachedBlogs = cache.get(BLOGS_CACHE_KEY);
+            
+            if (cachedBlogs && Array.isArray(cachedBlogs) && cachedBlogs.length > 0) {
+                console.log("Returning cached blogs as fallback after error");
+                const blogsWithBanners = cachedBlogs.filter(blog => blog.banner && blog.banner !== "").length;
+                
+                return res.status(200).json({
+                    success: 1,
+                    message: "Fetched blogs from cache (error with fresh data).",
+                    blogs: cachedBlogs,
+                    count: cachedBlogs.length,
+                    withBanners: blogsWithBanners,
+                    fromCache: true
+                });
+            }
+        } catch (cacheError) {
+            console.error("Error accessing cache:", cacheError);
+        }
+        
+        return res.status(500).json({ 
+            success: 0, 
+            message: "Internal Server Error while fetching blogs: " + error.message 
+        });
+    }
 });
 
 app.get("/trending-blogs", async (req, res) => {
