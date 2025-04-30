@@ -13,6 +13,7 @@
         "express": "^4.21.2",
         "graphql-request": "^7.1.2",
         "nanoid": "^5.1.3",
+        "node-cache": "^5.1.2",
         "thirdweb": "^5.95.1"
     },
     "devDependencies": {
