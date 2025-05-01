@@ -322,7 +322,7 @@ const BlogPage = () => {
                 </h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
                   {similarBlog.map((blog, i) => {
-                    let author = blog.author || {};
+                    let author = blog.author.personal_info || {};
                     return (
                       <AnimationWrapper
                         key={blog.blog_id || i}
