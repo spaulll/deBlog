@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Heart, MessageSquare, TwitterIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { UserContext } from "../App";
 import { ToastContainer, toast } from "react-toastify";
 import {
   likePost,
@@ -13,6 +12,7 @@ import { useActiveAccount } from "thirdweb/react";
 import { LoadingOverlay } from "./register.modal-component";
 import donation from "../imgs/donation.svg";
 import ApproveTransactionModal from "./tipping.modal";
+import axios from "axios";
 
 const BlogInteraction = () => {
   const {
@@ -48,6 +48,23 @@ const BlogInteraction = () => {
     }
   }, [postOwner, authorTipAddress, setAuthorTipAddress]);
 
+  const invalidateBlogCache = async () => {
+      try {
+        await axios.post(`${import.meta.env.VITE_SERVER_URL}/api/invalidate-blog-cache`, 
+          { operation: "invalidate" },
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json", 
+            },
+          }
+        );
+        console.log("Blog cache invalidated successfully");
+      } catch (error) {
+        console.error("Failed to invalidate blog cache:", error);
+      }
+    };
+
   const checkIfUserLiked = async () => {
     try {
       if (!blogData || !blogData.blog_id) return;
@@ -78,6 +95,7 @@ const BlogInteraction = () => {
         throw new Error("Failed to like the post.");
       }
       setIsLikedByUser(true);
+      invalidateBlogCache();
       toast.success("Post liked successfully.");
       setHandelLoading(false);
       setBlogData((prev) => ({
