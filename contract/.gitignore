@@ -1,0 +1,22 @@
+# Node.js dependencies
+node_modules/
+
+# Hardhat build artifacts and cache
+artifacts/
+cache/
+
+# Environment variables
+.env
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+
+# Log files
+*.log
+
+# Coverage reports
+coverage/
