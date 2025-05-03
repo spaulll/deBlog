@@ -120,10 +120,22 @@ const EditProfile = () => {
         setForm(prev => ({ ...prev, bio: e.target.value }));
     };
 
-    const handleChange = (e) => {
+    const handleUsernameChange = (e) => {
         const { name, value } = e.target;
         setCharacterLeftUsername(usernameLimit - value.length);
         setForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleTipWalletChange = (e) => {
+            const { name, value } = e.target;
+            setForm(prev => ({ ...prev, [name]: value }));
+            if (!(/^0x[a-fA-F0-9]{40}$/g.test(value))) {
+                document.getElementsByName(name)[0].style.color = "red";
+                // toast.error("Invalid wallet address format. Please enter a valid Ethereum address.");
+            }
+            else if (/^0x[a-fA-F0-9]{40}$/g.test(value)) {
+                document.getElementsByName(name)[0].style.color = "green";
+            }
     };
 
     const handleSocialLinkChange = (platform, value) => {
@@ -134,6 +146,13 @@ const EditProfile = () => {
                 [platform]: value
             }
         }));
+        if (!(/^https:\/\/[0-z]+.[a-z]+\/[0-z]*/g.test(value))) {
+            document.getElementById(platform).style.backgroundColor = "#FFCCCC";
+            // toast.error("Invalid wallet address format. Please enter a valid Ethereum address.");
+        }
+        else if (/^https:\/\/[0-z]+.[a-z]+\/[0-z]*/g.test(value)) {
+            document.getElementById(platform).style.backgroundColor = "#F3F3F3";
+        }
     };
 
     const handleImagePreview = (e) => {
@@ -174,6 +193,8 @@ const EditProfile = () => {
             return toast.error("Username should be at least 3 characters");
         } else if (form.bio.length > bioLimit) {
             return toast.error(`Bio should be within ${bioLimit} characters`);
+        } else if (!/^0x[a-fA-F0-9]{40}$/g.test(form.tipWalletAddress)) {
+            return toast.error("Invalid wallet address format. Please enter a valid Ethereum address.");
         }
 
         const loading = toast.loading("Updating profile...");
@@ -261,7 +282,7 @@ const EditProfile = () => {
                                     placeholder="Username"
                                     maxLength={10}
                                     value={form.username}
-                                    onChange={handleChange}
+                                    onChange={handleUsernameChange}
                                     required
                                     className="w-full p-2 pl-10 border rounded input-box"
                                 />
@@ -294,7 +315,7 @@ const EditProfile = () => {
                                 name="tipWalletAddress"
                                 placeholder="Tip Wallet Address"
                                 value={form.tipWalletAddress}
-                                onChange={handleChange}
+                                onChange={handleTipWalletChange}
                                 required
                                 className="w-full p-2 pl-10 border rounded input-box"
                             />
