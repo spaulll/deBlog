@@ -1,5 +1,5 @@
 import { defineChain } from "thirdweb";
 
 export const chain = defineChain({
-    id: 84532,
+    id: 10143,                              // Monad testnet chain id
 });
