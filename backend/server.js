@@ -13,7 +13,7 @@ import { searchUserProfiles } from "./libs/graph-ops/userProfile.js";
 // GraphQL imports
 import { getLatestBlogs, invalidateBlogsCache, getCacheStats } from "./libs/graph-ops/latestBlogs.js";
 import { getTrendingBlogs } from "./libs/graph-ops/trendingBlogs.js";
-import { getBlogsOfAuthor } from "./libs/graph-ops/blogsByAuthor.js";
+import { getBlogsOfAuthor, clearAuthorCache, getCacheStats as authorCacheStats  } from "./libs/graph-ops/blogsByAuthor.js";
 import { getBlogsByKeywords, clearSearchCache, getCacheStats as searchCacheStats } from "./libs/graph-ops/blogsByKeyword.js";
 import { getUserProfile } from "./libs/contractInteraction.js";
 import { getComments } from "./libs/graph-ops/comments.js";
@@ -269,7 +269,7 @@ app.post("/create-blog", async (req, res) => {
 })
 
 app.post("/api/invalidate-blog-cache", async (req, res) => {
-    const jwt = req.cookies?.jwt ||"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIweDcyNkRDYjcxZGM5Mjk4RDg3Nzk2MzA5Y2RCQWYzMjIwRWJDNjg0NzIiLCJzdWIiOiIweDlCMkI1YmEzREJCNjU2RTA0QTVGNDRBQTQwYUMzNDEyRDNGQzBBQzUiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxNzMiLCJleHAiOjE3NDYwNzYwNTEsIm5iZiI6MTc0NTk4OTA0NCwiaWF0IjoxNzQ1OTg5NjUxLCJqdGkiOiIweGI0OWFlOTI1ZjMwNTU4YTk1ZTNkZTU4OTZmN2YwMDE3ZTA3MGJiOTE2YThhYzFlNjg0OTYxMzZjZTMyYmU2NDgiLCJjdHgiOnt9fQ.MHg0ZDdiNDM5MjlmNTg5ZDc1MDhlZmJjMDJhN2ZkZDgyZmVjMWVmZTBhZTVmMzlhNTBmNzM1YjQ3NTAxNjZhMmQ3NGRlMzdjMWFjMjRhMjliNDY4NTk1ZmU2NzJlNWNlYmVmYmIyNTc1YThkMzRjMWE1N2E0Yjk1MTFkMDJiZTVmOTFj" ;
+    const jwt = req.cookies?.jwt
     if (!jwt) {
         console.log("No JWT found in cookies");
         return res.status(401).json({ success: 0, message: "Unauthorized" });
@@ -280,23 +280,18 @@ app.post("/api/invalidate-blog-cache", async (req, res) => {
         return res.status(401).json({ success: 0, message: "Unauthorized" });
     }
 
-    const operation = req.body.operation;
-    console.log("Operation:", operation);
-
-    // Actually call the invalidation function
-    const invalidationResult = invalidateBlogsCache();
-    const searchInvalidationResult = clearSearchCache();
-    console.log("Cache invalidation result:", invalidationResult, searchInvalidationResult);
-
-    // Get cache stats after invalidation
-    const cacheStats = getCacheStats();
-    const searchCacheStat = searchCacheStats();
+    function invalidateAllCaches() {
+        return {
+            blog: invalidateBlogsCache(),
+            search: clearSearchCache(),
+            author: clearAuthorCache()
+        };
+    }
+    
     return res.status(200).json({
         success: 1,
         message: "Cache invalidated successfully. Next fetch will use fresh data including IPFS content.",
-        invalidationResult,
-        cacheStats,
-        searchCacheStat,
+        caches: invalidateAllCaches()
     });
 });
 
