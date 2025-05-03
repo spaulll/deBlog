@@ -233,13 +233,22 @@ const EditProfile = () => {
                             hidden
                             onChange={handleImagePreview}
                         />
+                        {(updatedProfileImg) ? (
                         <button
                             className="btn-light mt-5 max-lg:center lg:w-full px-10"
                             onClick={handleImageUpload}
                             type="button"
                         >
+                            Apply Image
+                        </button>):(
+                        <button
+                            className="btn-light mt-5 max-lg:center lg:w-full px-10"
+                            onClick={() => document.getElementById('uploadImg').click()}
+                            type="button"
+                        >
                             Upload
-                        </button>
+                        </button>)
+                        }
                     </div>
 
                     <div className="w-full">
@@ -259,7 +268,7 @@ const EditProfile = () => {
                                 <p className="text-dark-grey mt-2 text-sm">
                                     Username will be visible to all users
                                 </p>
-                                <p className="text-dark-grey text-right mt-1">
+                                <p className="absolute top-2 right-2 text-dark-grey text-right block">
                                     {characterLeftUsername} characters left
                                 </p>
                             </div>
@@ -267,8 +276,7 @@ const EditProfile = () => {
                                 <Wallet className="absolute top-2 left-2 text-gray-500" />
                                 <input
                                     type="text"
-                                    value={address.substring(0, 15) + "......" + address.substring(address.length - 15)}
-                                    // value={address.length}
+                                    value={address}
                                     readOnly
                                     placeholder="Wallet Address"
                                     className="w-full p-2 pl-10 border rounded input-box bg-gray-100"
@@ -304,7 +312,7 @@ const EditProfile = () => {
                             onChange={handleCharacterChange}
                         />
 
-                        <p className="text-dark-grey text-right mt-1">
+                        <p className="relative bottom-10 right-2 text-dark-grey text-right mt-1">
                             {characterLeftBio} characters left
                         </p>
 
@@ -327,7 +335,7 @@ const EditProfile = () => {
                         <button
                             type="submit"
                             onClick={handleSubmit}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-6 btn-dark w-auto px-10"
+                            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 mt-6 btn-dark w-auto px-10"
                         >
                             Update Profile
                         </button>
