@@ -1,17 +1,18 @@
 import { getContract } from "thirdweb";
-import { baseSepolia } from "thirdweb/chains";
+// import { baseSepolia } from "thirdweb/chains";
 import { client } from "./client";
 import userProfileAbi from "./abi/UserProfileAbi.json";
 import blogAbi from "./abi/BlogAbi.json";
+import { chain } from "./chain";
 
 // Contract object for UserProfile
 const UserProfileContract = getContract({
     // the client you have created via `createThirdwebClient()`
     client,
     // the chain the contract is deployed on
-    chain: baseSepolia,
+    chain: chain,
     // the contract's address
-    address: "0xf9Fe7c53059f789a6A89173ae34e0002ef3f4d53",
+    address: "0xBbdc6C8B1A24B61aEdd77650ae01dcE9722B56B5",
     // OPTIONAL: the contract's abi
     abi: userProfileAbi
 });
@@ -21,9 +22,9 @@ const BlogContract = getContract({
     // the client you have created via `createThirdwebClient()`
     client,
     // the chain the contract is deployed on
-    chain: baseSepolia,
+    chain: chain,
     // the contract's address
-    address: "0x10833296b7A01a6DBE852119eA56B6fe6103D7be",
+    address: "0xac60A3b6ed1d0716D24b7B2826272390DC2e0D37",
     // OPTIONAL: the contract's abi
     abi: blogAbi
 });
