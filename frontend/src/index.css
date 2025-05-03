@@ -55,11 +55,11 @@
     }
 
     .input-box {
-        @apply w-[100%] rounded-md p-4 bg-grey pl-12 border border-grey focus:bg-transparent placeholder:text-black;
+        @apply w-[100%] rounded-md p-4 bg-grey pl-12 border border-grey focus:bg-transparent placeholder:text-dark-grey;
     }
 
     input:disabled, input:disabled ~ .input-icon{
-        @apply opacity-50;
+        @apply cursor-not-allowed; 
     }
 
     .input-icon{
