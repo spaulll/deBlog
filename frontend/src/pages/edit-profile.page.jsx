@@ -40,12 +40,12 @@ const EditProfile = () => {
     });
 
     const socialIcons = {
-        youtube: <Youtube className="absolute top-4 left-2 text-xl hover:text-[#7d2929]" />,
-        instagram: <Instagram className="absolute top-4 left-2 text-xl hover:text-[#83473d]" />,
-        github: <Github className="absolute top-4 left-2 text-xl hover:text-[#292a77]" />,
-        facebook: <Facebook className="absolute top-4 left-2 text-xl hover:text-[#4161b1]" />,
-        twitter: <Twitter className="absolute top-4 left-2 text-xl hover:text-[#4c859a]" />,
-        website: <LinkIcon className="absolute top-4 left-2 text-xl hover:text-gray-700" />
+        youtube: <Youtube className="absolute top-2 left-2 text-xl hover:text-[#7d2929]" />,
+        instagram: <Instagram className="absolute top-2 left-2 text-xl hover:text-[#83473d]" />,
+        github: <Github className="absolute top-2 left-2 text-xl hover:text-[#292a77]" />,
+        facebook: <Facebook className="absolute top-2 left-2 text-xl hover:text-[#4161b1]" />,
+        twitter: <Twitter className="absolute top-2 left-2 text-xl hover:text-[#4c859a]" />,
+        website: <LinkIcon className="absolute top-2 left-2 text-xl hover:text-gray-700" />
     };
 
     const { mutateAsync: sendTransaction } = useSendTransaction();
@@ -245,7 +245,7 @@ const EditProfile = () => {
                     <div className="w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div className="relative">
-                                <AtSign className="absolute top-4 left-2 text-gray-500" />
+                                <AtSign className="absolute top-2 left-2 text-gray-500" />
                                 <input
                                     type="text"
                                     name="username"
@@ -264,11 +264,12 @@ const EditProfile = () => {
                                 </p>
                             </div>
                             <div className="relative">
-                                <Wallet className="absolute top-4 left-2 text-gray-500" />
+                                <Wallet className="absolute top-2 left-2 text-gray-500" />
                                 <input
                                     type="text"
-                                    value={address}
-                                    disabled
+                                    value={address.substring(0, 15) + "......" + address.substring(address.length - 15)}
+                                    // value={address.length}
+                                    readOnly
                                     placeholder="Wallet Address"
                                     className="w-full p-2 pl-10 border rounded input-box bg-gray-100"
                                 />
@@ -279,7 +280,7 @@ const EditProfile = () => {
                         </div>
 
                         <div className="relative mb-6">
-                            <img src={donation} className="absolute top-4 left-2 text-gray-500 w-8 h-8" />
+                            <img src={donation} className="absolute top-2 left-2 text-gray-500 w-8 h-8" />
                             <input
                                 type="text"
                                 name="tipWalletAddress"
