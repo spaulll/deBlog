@@ -149,12 +149,21 @@ function buildQuery(hasUsername, hasAddress) {
  */
 async function transformAuthorBlogs(posts, postReacteds) {
   // Create reactions lookup map for efficient access
-  const reactionsMap = new Map(
-    postReacteds.map(reaction => [
-      reaction.blogIdHash.toLowerCase(), 
-      parseInt(reaction.likes || 0)
-    ])
-  );
+  const reactionsMap = new Map();
+  
+  // Instead of using map, handle each reaction individually
+  postReacteds.forEach(reaction => {
+    const blogId = reaction.blogIdHash.toLowerCase();
+    const likes = parseInt(reaction.likes || 0);
+    
+    // Only update if the new likes count is higher (in case of multiple entries)
+    if (!reactionsMap.has(blogId) || likes > reactionsMap.get(blogId)) {
+      reactionsMap.set(blogId, likes);
+    }
+  });
+  
+  // For debugging
+  console.log("Author blogs reactions map:", Object.fromEntries(reactionsMap));
 
   // Process all posts concurrently
   return Promise.all(posts.map(async post => {
