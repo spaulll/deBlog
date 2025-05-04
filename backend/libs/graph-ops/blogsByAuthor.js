@@ -20,7 +20,6 @@ const IPFS_GATEWAYS = [
 ];
 
 // Helper functions
-const truncateAddress = addr => addr?.length >= 10 ? `${addr.substring(0, 4)}...${addr.substring(addr.length - 4)}` : addr;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
@@ -182,7 +181,7 @@ async function transformAuthorBlogs(posts, postReacteds) {
         tags: post.tags,
         author: {
           personal_info: {
-            fullname: truncateAddress(post.userAddress),
+            user_address: post.userAddress,
             username: post.username,
             profile_img: post.avatarUri || 
               `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress.toLowerCase()}`,
@@ -201,7 +200,7 @@ async function transformAuthorBlogs(posts, postReacteds) {
         error: true,
         author: {
           personal_info: {
-            fullname: truncateAddress(post.userAddress),
+            user_address: truncateAddress(post.userAddress),
             username: post.username,
             profile_img: post.avatarUri || 
               `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress.toLowerCase()}`,

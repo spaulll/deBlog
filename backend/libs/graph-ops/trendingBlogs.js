@@ -25,11 +25,6 @@ const query = gql`
 const url = process.env.BLOGS_SUBGRAPH_URL;
 const headers = { Authorization: `Bearer ${process.env.GRAPH_API_KEY}` };
 
-function truncateAddress(address) {
-  if (address.length < 10) return address;
-  return address.substring(0, 4) + "..." + address.substring(address.length - 4);
-}
-
 function transformTrendingBlogs(trendingBlogs, postReacteds) {
   const blogs = trendingBlogs.map((post) => {
     const matchedReaction = postReacteds.find(
@@ -51,7 +46,7 @@ function transformTrendingBlogs(trendingBlogs, postReacteds) {
       tags: post.tags,
       author: {
         personal_info: {
-          fullname: truncateAddress(post.userAddress),
+          user_address: post.userAddress,
           username: post.username,
           profile_img: post.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress.toLowerCase()}`,
         },
