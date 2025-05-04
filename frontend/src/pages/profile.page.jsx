@@ -18,7 +18,7 @@ import { Toaster } from "react-hot-toast";
 
 export const profileStructure = {
   personal_info: {
-    fullname: "",
+    user_address: "",
     email: "",
     username: "",
     bio: "",
@@ -49,8 +49,7 @@ const ProfilePage = () => {
 
   const {
     personal_info: {
-      fullname,
-      email,
+      user_address,
       username: profile_username,
       bio,
       profile_img,
@@ -74,8 +73,7 @@ const ProfilePage = () => {
         console.log("Profile API response:", data);
         if (data.user != null) {
           setProfile(data.user);
-          console.log("Profile set:", data.user);
-          getBlogs({ user_id: profileId });
+          getBlogs(data.user.personal_info.user_address);
         } else {
           console.warn("No user found.");
         }
@@ -88,17 +86,17 @@ const ProfilePage = () => {
       });
   };
 
-  const getBlogs = (user_id) => {
-    console.warn("Fetching blogs for user_id:", user_id.user_id);
-    if (!user_id) {
-      console.warn("user_id missing for blog fetch.");
+  const getBlogs = (address) => {
+    console.warn("Fetching blogs for user:", address);
+    if (!address) {
+      console.warn("address missing for blog fetch.");
       return;
     }
 
     axios
       .get(import.meta.env.VITE_SERVER_URL + "/api/search-blogs", {
         params: {
-          username: user_id.user_id,
+          address: address,
         },
       })
       .then(async ({ data }) => {
@@ -163,7 +161,7 @@ const ProfilePage = () => {
                 alt="Profile"
               />
               <h1 className="text-2xl font-medium">@{profile_username}</h1>
-              <p className="text-xl capitalize h-6">{fullname}</p>
+              <p className="text-xl capitalize h-6">{user_address}</p>
               <div className="col-span-2 flex gap-4 items-center">
                 <button className="pt-4" onClick={handelCopyAdderss}>
                   {/* {copied ? <Check size={"20px"} /> : <Copy size={"20px"} />} */}
