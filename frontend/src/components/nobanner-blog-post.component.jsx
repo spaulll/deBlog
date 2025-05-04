@@ -5,7 +5,7 @@ import { getDay } from '../common/date';
 
 const MinimalBlogPost = ({blog,index}) =>{
 
-    let{title, blog_id:id, author:{personal_info:{ fullname, username, profile_img}}, publishedAt}= blog;
+    let{title, blog_id:id, author:{personal_info:{ username, profile_img}}, publishedAt}= blog;
 
 
     return (
@@ -14,7 +14,8 @@ const MinimalBlogPost = ({blog,index}) =>{
             <div className="">
                 <div className=" flex gap-2 items-center mb-7">
                     <img src={profile_img} className='h-5 w-5 rounded-full'/>
-                    <p className="line-clamp-1">{fullname} @ {username}</p>
+                    <p className="line-clamp-1">@ {username}</p>
+                    <p className="line-clamp-1">|</p>
                     <p className="min-w-fit">{getDay(publishedAt)} </p>
                 </div>
                 <h1 className="blog-title">{title} </h1>
