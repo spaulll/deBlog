@@ -5,10 +5,10 @@ import { UserProfileContract } from "./contracts.js";
 const formatUserProfile = (userProfile) => {
   return {
     personal_info: {
-      fullname: userProfile.userAddress.substring(0, 4) + "..." + userProfile.userAddress.substring(userProfile.userAddress.length - 4),
+      user_address: userProfile.userAddress,
       username: userProfile.username,
       bio: userProfile.bio,
-      profile_img: userProfile.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${userProfile.userAddress.toLowerCase()}`,
+      profile_img: userProfile.avatarUri || `https://api.dicebear.com/9.x/adventurer/svg?seed=${userProfile.userAddress.toLowerCase()}`,
       tip_address: userProfile.tipWalletAddress
     },
     social_links: {
