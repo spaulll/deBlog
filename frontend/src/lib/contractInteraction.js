@@ -53,8 +53,7 @@ const getAvatar = async (address) => {
     // address = "0x726DCb71dc9298D87796309cdBAf3220EbC68472";
     try {
         const userProfile = await getUserProfile(address);
-        const avatarUrl = userProfile.avatarUrl;
-        // const avatarUrl = "https://api.dicebear.com/9.x/adventurer/svg?seed=random";
+        const avatarUrl = userProfile.avatarUri;
         return avatarUrl;
     } catch (error) {
         console.error(error);
