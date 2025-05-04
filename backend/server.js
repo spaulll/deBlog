@@ -297,75 +297,20 @@ app.post("/api/invalidate-blog-cache", async (req, res) => {
 
 app.get("/latest-blogs", async (req, res) => {
     try {
-        // Pass the forceRefresh query parameter to getLatestBlogs
-        const forceRefresh = req.query.forceRefresh;
-        console.log("Force refresh:", forceRefresh);
-        
-        // Get cache stats before fetching to see if force refresh is pending
-        const cacheStatsBefore = getCacheStats();
-        console.log("Cache stats before fetch:", {
-            forceRefreshPending: cacheStatsBefore.forceRefreshPending,
-            totalKeys: cacheStatsBefore.keys.length
-        });
-        
-        // Set timeout longer than the function's internal timeout to ensure we get a response
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Blog fetching timed out after 15s')), 15000)
-        );
-        
-        // Race between fetch and timeout
-        const blogs = await Promise.race([
-            getLatestBlogs(forceRefresh),
-            timeoutPromise
-        ]);
-        
-        if (!blogs || !Array.isArray(blogs)) {
-            return res.status(500).json({ 
-                success: 0, 
-                message: "Failed to fetch blogs or invalid data format" 
-            });
+ 
+        const blogs = await getLatestBlogs();
+        console.log("Latest Blogs:", blogs);
+        if (!blogs) {
+            return res.status(500).json({ success: 0, message: "Internal Server Error." });
         }
-        
-        // Log how many blogs have banners for debugging
-        const blogsWithBanners = blogs.filter(blog => blog.banner && blog.banner !== "").length;
-        console.log(`Retrieved ${blogs.length} blogs, ${blogsWithBanners} with banners`);
-        
         return res.status(200).json({
             success: 1,
             message: "Latest blogs fetched successfully.",
-            blogs,
-            count: blogs.length,
-            withBanners: blogsWithBanners
+            blogs
         });
     } catch (error) {
         console.error("Error fetching latest blogs:", error);
-        
-        // Try to get cached data as fallback
-        try {
-            const cacheStats = getCacheStats();
-            const cachedBlogs = cache.get(BLOGS_CACHE_KEY);
-            
-            if (cachedBlogs && Array.isArray(cachedBlogs) && cachedBlogs.length > 0) {
-                console.log("Returning cached blogs as fallback after error");
-                const blogsWithBanners = cachedBlogs.filter(blog => blog.banner && blog.banner !== "").length;
-                
-                return res.status(200).json({
-                    success: 1,
-                    message: "Fetched blogs from cache (error with fresh data).",
-                    blogs: cachedBlogs,
-                    count: cachedBlogs.length,
-                    withBanners: blogsWithBanners,
-                    fromCache: true
-                });
-            }
-        } catch (cacheError) {
-            console.error("Error accessing cache:", cacheError);
-        }
-        
-        return res.status(500).json({ 
-            success: 0, 
-            message: "Internal Server Error while fetching blogs: " + error.message 
-        });
+        return res.status(500).json({ success: 0, message: "Internal Server Error." });
     }
 });
 
