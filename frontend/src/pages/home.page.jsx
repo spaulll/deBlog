@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
 import axios from "axios";
@@ -7,8 +7,6 @@ import BlogPostCard from "../components/blog-post.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
 import { activeTabRef } from "../components/inpage-navigation.component";
 import NoDataMessage from "../components/nodata.component";
-import { filterPaginationData } from "../common/filter-pagination-data";
-// import LoadMoreDataBtn from "../components/load-more.component";
 import interestIcon from "../imgs/interest.svg";
 
 const HomePage = () => {
@@ -17,20 +15,10 @@ const HomePage = () => {
   let [pageState, setPageState] = useState("home");
   const [categories, setCategories] = useState([]);
 
-  // Use ref to track if this is first visit
-  const isFirstVisit = useRef(true);
-
   const fetchLatestBlogs = () => {
-    // Only send forceRefresh: true on first visit
-    const params = { forceRefresh: isFirstVisit.current };
-
-    // Set first visit to false after first fetch
-    if (isFirstVisit.current) {
-      isFirstVisit.current = false;
-    }
 
     axios
-      .get(import.meta.env.VITE_SERVER_URL + "/latest-blogs", { params })
+      .get(import.meta.env.VITE_SERVER_URL + "/latest-blogs")
       .then(({ data }) => {
         console.log(data.blogs);
         setBlogData({ results: data.blogs });
