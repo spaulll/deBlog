@@ -112,21 +112,36 @@ async function fetchIPFSWithFallbacks(originalUri, bypassCache = false) {
  * Process blogs and fetch all IPFS data concurrently
  */
 async function transformLatestBlogs(latestBlogs, postReacteds, bypassIPFSCache = false) {
-  // Create reactions lookup map
-  const reactionsMap = new Map(
-    postReacteds.map(reaction => [
-      reaction.blogIdHash.toLowerCase(), 
-      parseInt(reaction.likes || 0)
-    ])
-  );
+  // Create reactions lookup map - NOTE: Convert all keys to lowercase for case-insensitive comparison
+  const reactionsMap = new Map();
+  
+  // Instead of summing, we need to use the actual likes value as it already represents the total
+  postReacteds.forEach(reaction => {
+    const blogId = reaction.blogIdHash.toLowerCase();
+    const likes = parseInt(reaction.likes || 0);
+    
+    // Only update if the new likes count is higher (in case of multiple entries)
+    if (!reactionsMap.has(blogId) || likes > reactionsMap.get(blogId)) {
+      reactionsMap.set(blogId, likes);
+    }
+  });
+  
+  // For debugging
+  console.log("Reactions map:", Object.fromEntries(reactionsMap));
 
   // Process all posts concurrently
   return Promise.all(latestBlogs.map(async post => {
     try {
+      const blogIdLower = post.blogIdHash.toLowerCase();
       const ipfsData = await fetchIPFSWithFallbacks(post.ipfsUri, bypassIPFSCache);
+      
+      // Debug logging for this specific post
+      console.log(`Processing blog ${blogIdLower}`);
+      console.log(`Likes found: ${reactionsMap.get(blogIdLower) || 0}`);
+      
       return {
         activity: {
-          total_likes: reactionsMap.get(post.blogIdHash.toLowerCase()) || 0,
+          total_likes: reactionsMap.get(blogIdLower) || 0,
           total_comments: 0,
           total_parent_comments: 0,
         },
@@ -177,17 +192,25 @@ const getLatestBlogs = async (forceRefresh = false) => {
     const shouldForceRefresh = forceRefresh === true || 
                                forceRefresh === 'true' || 
                                cache.get(FORCE_REFRESH_FLAG) === true;
-    const refreshIPFSToo = cache.get(FORCE_REFRESH_FLAG) === true;
+    const refreshIPFSToo = shouldForceRefresh;
     
-    if (refreshIPFSToo) cache.del(FORCE_REFRESH_FLAG);
+    // Always clear the force refresh flag when used
+    if (cache.get(FORCE_REFRESH_FLAG) === true) {
+      cache.del(FORCE_REFRESH_FLAG);
+    }
     
     // Return cached data if available and refresh not requested
     if (!shouldForceRefresh && cache.has(BLOGS_CACHE_KEY)) {
       return cache.get(BLOGS_CACHE_KEY);
     }
     
+    console.log("Fetching fresh data from subgraph...");
+    
     // Fetch fresh data
     const data = await request(url, query, {}, headers);
+    
+    console.log(`Fetched ${data.postCreateds.length} blogs and ${data.postReacteds.length} reactions`);
+    
     const transformedData = await transformLatestBlogs(
       data.postCreateds, 
       data.postReacteds,
@@ -199,7 +222,12 @@ const getLatestBlogs = async (forceRefresh = false) => {
     return transformedData;
   } catch (error) {
     console.error('Error fetching blogs:', error.message);
-    return cache.get(BLOGS_CACHE_KEY) || Promise.reject(error);
+    // If we have cached data, return it as fallback
+    if (cache.has(BLOGS_CACHE_KEY)) {
+      console.log("Returning cached data due to error");
+      return cache.get(BLOGS_CACHE_KEY);
+    }
+    return Promise.reject(error);
   }
 };
 
@@ -207,6 +235,7 @@ const getLatestBlogs = async (forceRefresh = false) => {
  * Clear cache to force refresh
  */
 const invalidateBlogsCache = () => {
+  // Clear main blogs cache
   cache.del(BLOGS_CACHE_KEY);
   
   // Clear all IPFS cache entries
@@ -215,6 +244,8 @@ const invalidateBlogsCache = () => {
   
   // Set refresh flag
   cache.set(FORCE_REFRESH_FLAG, true, 300);
+  
+  console.log("Cache invalidated successfully");
   
   return {
     mainCacheCleared: true,
