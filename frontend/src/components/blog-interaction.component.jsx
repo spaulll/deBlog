@@ -178,6 +178,7 @@ const BlogInteraction = () => {
             to={`https://twitter.com/intent/tweet?text=${
               blogData?.title || "Check this out!"
             }&url=${window.location.href}`}
+            target="_blank"
           >
             <TwitterIcon className="hover:text-twitter" />
           </Link>
