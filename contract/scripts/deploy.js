@@ -13,6 +13,12 @@ async function main() {
   await blog.deployed();
   console.log("Blog deployed at:", blog.address);
 
+  // Deploy Tipping with the address of UserProfile
+  const Tipping = await hre.ethers.getContractFactory("Tipping");
+  const tipping = await Tipping.deploy(userProfile.address);
+  await tipping.deployed();
+  console.log("Tipping deployed at:", tipping.address);
+  
   // OPTIONAL: Set Blog address in UserProfile
   const tx = await userProfile.updateBlogContractAddress(blog.address);
   await tx.wait();
