@@ -139,14 +139,38 @@ function buildQuery(hasUsername, hasAddress) {
         postOwner
         likes
       }
+      commentAddeds {
+        userAddress
+        blogIdHash
+      }
     }
   `;
 }
 
 /**
+ * Calculate comment counts for a specific blogIdHash
+ */
+function calculateCommentCounts(comments) {
+  // Create a map to store comment counts by blogIdHash
+  const commentCountMap = new Map();
+  
+  comments.forEach(comment => {
+    const blogId = comment.blogIdHash.toLowerCase();
+    
+    // Increment total comments count
+    commentCountMap.set(blogId, (commentCountMap.get(blogId) || 0) + 1);
+  });
+  
+  // For debugging
+  console.log("Comment counts by blog:", Object.fromEntries(commentCountMap));
+  
+  return { commentCountMap };
+}
+
+/**
  * Transform posts and fetch all IPFS data concurrently
  */
-async function transformAuthorBlogs(posts, postReacteds) {
+async function transformAuthorBlogs(posts, postReacteds, comments) {
   // Create reactions lookup map for efficient access
   const reactionsMap = new Map();
   
@@ -161,17 +185,22 @@ async function transformAuthorBlogs(posts, postReacteds) {
     }
   });
   
+  // Calculate comment counts
+  const { commentCountMap } = calculateCommentCounts(comments);
+  
   // For debugging
   console.log("Author blogs reactions map:", Object.fromEntries(reactionsMap));
 
   // Process all posts concurrently
   return Promise.all(posts.map(async post => {
     try {
+      const blogId = post.blogIdHash.toLowerCase();
       const ipfsData = await fetchIPFSWithFallbacks(post.ipfsUri);
+      
       return {
         activity: {
-          total_likes: reactionsMap.get(post.blogIdHash.toLowerCase()) || 0,
-          total_comments: 0,
+          total_likes: reactionsMap.get(blogId) || 0,
+          total_comments: commentCountMap.get(blogId) || 0,
           total_parent_comments: 0,
         },
         blog_id: post.blogIdHash,
@@ -200,7 +229,7 @@ async function transformAuthorBlogs(posts, postReacteds) {
         error: true,
         author: {
           personal_info: {
-            user_address: truncateAddress(post.userAddress),
+            user_address: post.userAddress,
             username: post.username,
             profile_img: post.avatarUri || 
               `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.userAddress.toLowerCase()}`,
@@ -250,7 +279,7 @@ const getBlogsOfAuthor = async (username, address, forceRefresh = false) => {
     console.log('GraphQL response received');
     
     // Transform and fetch IPFS data in parallel
-    const transformedBlogs = await transformAuthorBlogs(data.postCreateds, data.postReacteds);
+    const transformedBlogs = await transformAuthorBlogs(data.postCreateds, data.postReacteds, data.commentAddeds);
     console.log(`Transformed ${transformedBlogs.length} blogs for author`);
     
     // Cache the results
