@@ -3,6 +3,7 @@ import { getContract } from "thirdweb";
 import { client } from "./client";
 import userProfileAbi from "./abi/UserProfileAbi.json";
 import blogAbi from "./abi/BlogAbi.json";
+import tipAbi from "./abi/TipAbi.json";
 import { chain } from "./chain";
 
 // Contract object for UserProfile
@@ -12,7 +13,7 @@ const UserProfileContract = getContract({
     // the chain the contract is deployed on
     chain: chain,
     // the contract's address
-    address: "0xBbdc6C8B1A24B61aEdd77650ae01dcE9722B56B5",
+    address: "0xbD37B8998B7aC367D087964eD15Ee74266D7E571",
     // OPTIONAL: the contract's abi
     abi: userProfileAbi
 });
@@ -24,8 +25,20 @@ const BlogContract = getContract({
     // the chain the contract is deployed on
     chain: chain,
     // the contract's address
-    address: "0xac60A3b6ed1d0716D24b7B2826272390DC2e0D37",
+    address: "0x4A005929B01c248ED43C7436214B45a1F8f04eb3",
     // OPTIONAL: the contract's abi
     abi: blogAbi
 });
-export { UserProfileContract, BlogContract };
+
+// Contract for tipping 
+const TippingContract = getContract({
+    // the client you have created via `createThirdwebClient()`
+    client,
+    // the chain the contract is deployed on
+    chain: chain,
+    // the contract's address
+    address: "0xF1BDC5ede89DF2a6c28dA1f930F3DBA02BA06975",
+    // OPTIONAL: the contract's abi
+    abi: tipAbi
+}) 
+export { UserProfileContract, BlogContract, TippingContract };
