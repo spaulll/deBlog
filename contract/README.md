@@ -1,6 +1,6 @@
-# DeBlog Smart Contracts
+# ✨ deBlog Smart Contracts
 
-This repository contains the smart contracts for **DeBlog**, a decentralized blogging platform. It includes contracts for user profiles and blogging functionalities, written in Solidity and deployed using Hardhat.
+This repository contains the smart contracts for **deBlog**, a **decentralized blogging platform**. It includes contracts for user profiles, blogging functionalities, and tipping mechanisms, written in **Solidity** and deployed using **Hardhat**.
 
 ---
 
@@ -16,8 +16,12 @@ Handles:
 Manages:
 - Blog post creation
 - Post count updates linked to user profiles
-- Edit blog posts
-- Comments
+- Blog post editing
+- Comment functionality
+
+### 3. `Tipping.sol`
+Handles:
+- Tip distribution to content creators
 
 ---
 
@@ -27,14 +31,14 @@ Manages:
 .
 ├── contracts/         # Solidity contracts
 │   ├── Blog.sol
-│   └── UserProfile.sol
+│   ├── UserProfile.sol
+│   └── Tipping.sol
 ├── scripts/           # Deployment scripts
 │   └── deploy.js
-├── test/              # Optional: test cases
 ├── artifacts/         # Build output (ignored in git)
 ├── cache/             # Cache (ignored in git)
-├── .env               # Env vars (not tracked)
-├── .env.example       # Env var template
+├── .env               # Environment variables (not tracked)
+├── .env.example       # Environment variable template
 ├── .gitignore
 ├── hardhat.config.js
 ├── package.json
@@ -74,19 +78,21 @@ npx hardhat compile
 ### 4. Deploy Contracts
 
 ```bash
-npx hardhat run scripts/deploy.js --network network_name
+npx hardhat run scripts/deploy.js --network <network_name>
 ```
-
-> This will deploy both `UserProfile` and `Blog` contracts.
+> This will deploy `UserProfile`, `Blog`, and `Tipping` contracts.
 
 ---
 
-## ✅ Verify Deployment (Optional)
+## ✅ Verify Contracts (Optional)
 
-Use [Etherscan](https://etherscan.io/) or similar tools depending on your network.
+Use [Base Sepolia Explorer](https://base-sepolia.blockscout.com/) or similar tools depending on your deployment network.
 
-### Verify on Hardhat:
+### Verify on Etherscan:
 
 ```bash
-npx hardhat verify --network megaETH <contract_address> <constructor_args>
+npx hardhat verify --network <network_name> <contract_address> <constructor_args>
 ```
+
+---
+
