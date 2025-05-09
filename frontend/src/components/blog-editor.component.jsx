@@ -1,6 +1,6 @@
 // blog editor
 import { Link, useNavigate, useParams } from "react-router-dom";
-import logo from "../imgs/dblog.webp";
+import logo from "../imgs/logo.webp";
 import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
 import getImgURL from "../common/uploadToIPFS";
@@ -106,52 +106,7 @@ const BlogEditor = () => {
     let img = e.target;
     img.src = defaultBanner;
   };
-  const handelSaveDraft = (e) => {
-    if (e.target.className.includes("disable")) {
-      return;
-    }
-    if (!title.length) {
-      return toast.error("write blog title before saving it as a draft.");
-    }
-    let loadingToast = toast.loading("saving draft.....");
-    e.target.classList.add("disable");
-    if (textEditor.isReady) {
-      textEditor.save().then((content) => {
-        let blogObj = {
-          title,
-          des,
-          banner,
-          content,
-          tags,
-          draft: true,
-        };
-        console.log(blogObj);
-        const blogJson = JSON.stringify(blogObj);
-        console.log("Blog JSON",blogJson);
-        axios
-          .post(import.meta.env.VITE_SERVER_URL + "/create-blog", {...blogObj,id:blog_id}, {
-            withCredentials: true,
-            headers: {
-              contentType: "application/json",
-            },
-          })
-          .then(() => {
-            console.log(blog);
-            e.target.classList.remove("disable");
-            toast.dismiss(loadingToast);
-            toast.success("Saved");
-            setTimeout(() => {
-              navigate("/dashboard/blogs");
-            }, 500);
-          })
-          .catch(({ response }) => {
-            e.target.classList.remove("disable");
-            toast.dismiss(loadingToast);
-            return toast.error(response.data.error);
-          });
-      });
-    }
-  };
+
   return (
     <>
       <nav className="navbar">
@@ -164,9 +119,6 @@ const BlogEditor = () => {
         <div className="flex gap-2 ml-auto">
           <button className="btn-dark py-2" onClick={handelPublishEvent}>
             Publish
-          </button>
-          <button className="btn-light py-2" onClick={handelSaveDraft}>
-            Save Draft
           </button>
         </div>
       </nav>
