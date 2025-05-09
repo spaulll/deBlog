@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { useParams, Link } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
-import { Check, Copy, Loader, MessageSquare, Calendar, Youtube, Instagram, Github, Facebook, Twitter, Wallet, ExternalLink, BadgeDollarSign } from "lucide-react";
+import { Check, Copy, Loader, MessageSquare, Calendar, Youtube, Instagram, Github, Facebook, Twitter, Wallet, LinkIcon, BadgeDollarSign } from "lucide-react";
 import InPageNavigation from "../components/inpage-navigation.component";
 import NoDataMessage from "../components/nodata.component";
 import BlogPostCard from "../components/blog-post.component";
@@ -40,7 +40,7 @@ const socialIcons = {
   github: <Github size={20} className="hover:text-[#292a77] transition-colors" />,
   facebook: <Facebook size={20} className="hover:text-[#4161b1] transition-colors" />,
   twitter: <Twitter size={20} className="hover:text-[#4c859a] transition-colors" />,
-  website: <ExternalLink size={20} className="hover:text-[#2a6e4d] transition-colors" />
+  website: <LinkIcon size={20} className="hover:text-[#2a6e4d] transition-colors" />
 };
 
 const ProfilePage = () => {
@@ -84,9 +84,9 @@ const ProfilePage = () => {
           social_links: {
             youtube: userProfile.socialLinks[0],
             instagram: userProfile.socialLinks[1],
-            facebook: userProfile.socialLinks[2],
-            twitter: userProfile.socialLinks[3],
-            github: userProfile.socialLinks[4],
+            github: userProfile.socialLinks[2],
+            facebook: userProfile.socialLinks[3],
+            twitter: userProfile.socialLinks[4],
             website: userProfile.socialLinks[5],
           },
           account_info: {
