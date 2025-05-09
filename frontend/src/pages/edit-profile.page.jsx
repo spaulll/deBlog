@@ -24,6 +24,14 @@ const EditProfile = () => {
     const [characterLeftUsername, setCharacterLeftUsername] = useState(usernameLimit);
     const [updatedProfileImg, setUpdatedProfileImg] = useState(null);
     const { avatarUrl, setAvatarUrl } = useAuth();
+    const [linkErrors, setLinkErrors] = useState({
+        youtube: false,
+        instagram: false,
+        github: false,
+        facebook: false,
+        twitter: false,
+        website: false
+    });
     const [form, setForm] = useState({
         username: "",
         bio: "",
@@ -56,26 +64,27 @@ const EditProfile = () => {
         try {
             const userProfile = await getUserProfile(address);
 
-            // Example: UserProfile format:
-            // { "userAddress": "0x9B2B5ba3DBB656E04A5F44AA40aC3412D3FC0AC5", 
-            //   "tipWalletAddress": "0x9B2B5ba3DBB656E04A5F44AA40aC3412D3FC0AC5", 
-            //   "username": "Keen_Mole8", 
-            //   "bio": "", 
-            //   "avatarUri": "", 
-            //   "postCount": 4, 
-            //   "memberSince": 1745681942, 
-            //   "socialLinks": [] }
-
             if (userProfile) {
+                const socialLinksObj = userProfile.socialLinks?.length > 0 ?
+                    convertToSocialLinksObject(userProfile.socialLinks) :
+                    { youtube: "", instagram: "", github: "", facebook: "", twitter: "", website: "" };
+                console.error("Social Links: ", socialLinksObj)
                 setForm({
                     username: userProfile.username || "",
                     bio: userProfile.bio || "",
                     avatarUri: userProfile.avatarUri || "",
                     tipWalletAddress: userProfile.tipWalletAddress || address,
-                    socialLinks: userProfile.socialLinks?.length > 0 ?
-                        convertToSocialLinksObject(userProfile.socialLinks) :
-                        { youtube: "", instagram: "", github: "", facebook: "", twitter: "", website: "" },
+                    socialLinks: socialLinksObj,
                 });
+                
+                // Validate existing social links
+                Object.keys(socialLinksObj).forEach(platform => {
+                    const value = socialLinksObj[platform];
+                    if (value) {
+                        validateSocialLink(platform, value);
+                    }
+                });
+                
                 setCharacterLeftBio(bioLimit - (userProfile.bio?.length || 0));
                 setCharacterLeftUsername(usernameLimit - (userProfile.username?.length || 0));
             }
@@ -98,6 +107,7 @@ const EditProfile = () => {
             else if (link.includes('github')) socialLinksObj.github = link;
             else if (link.includes('facebook')) socialLinksObj.facebook = link;
             else if (link.includes('twitter')) socialLinksObj.twitter = link;
+            else if (link.includes('x.com')) socialLinksObj.twitter = link;
             else socialLinksObj.website = link;
         });
 
@@ -127,15 +137,26 @@ const EditProfile = () => {
     };
 
     const handleTipWalletChange = (e) => {
-            const { name, value } = e.target;
-            setForm(prev => ({ ...prev, [name]: value }));
-            if (!(/^0x[a-fA-F0-9]{40}$/g.test(value))) {
-                document.getElementsByName(name)[0].style.color = "red";
-                // toast.error("Invalid wallet address format. Please enter a valid Ethereum address.");
-            }
-            else if (/^0x[a-fA-F0-9]{40}$/g.test(value)) {
-                document.getElementsByName(name)[0].style.color = "green";
-            }
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+
+        const isValid = /^0x[a-fA-F0-9]{40}$/g.test(value);
+        if (e.target) {
+            e.target.style.color = isValid ? "green" : (value ? "red" : "inherit");
+        }
+    };
+
+    const validateSocialLink = (platform, value) => {
+        // Skip validation if empty (optional fields)
+        if (!value) {
+            setLinkErrors(prev => ({ ...prev, [platform]: false }));
+            return true;
+        }
+        
+        // URL validation regex
+        const isValid = /^https:\/\/[a-zA-Z0-9][\w-]*(\.[a-zA-Z]{2,})+([/\w-]*)*\/?$/i.test(value);
+        setLinkErrors(prev => ({ ...prev, [platform]: !isValid }));
+        return isValid;
     };
 
     const handleSocialLinkChange = (platform, value) => {
@@ -146,13 +167,8 @@ const EditProfile = () => {
                 [platform]: value
             }
         }));
-        if (!(/^https:\/\/[0-z]+.[a-z]+\/[0-z]*/g.test(value))) {
-            document.getElementById(platform).style.backgroundColor = "#FFCCCC";
-            // toast.error("Invalid wallet address format. Please enter a valid Ethereum address.");
-        }
-        else if (/^https:\/\/[0-z]+.[a-z]+\/[0-z]*/g.test(value)) {
-            document.getElementById(platform).style.backgroundColor = "#F3F3F3";
-        }
+        
+        validateSocialLink(platform, value);
     };
 
     const handleImagePreview = (e) => {
@@ -186,6 +202,12 @@ const EditProfile = () => {
         }
     };
 
+    const hasInvalidLinks = () => {
+        return Object.entries(form.socialLinks).some(([platform, value]) => {
+            return value.trim() !== "" && !validateSocialLink(platform, value);
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -195,6 +217,8 @@ const EditProfile = () => {
             return toast.error(`Bio should be within ${bioLimit} characters`);
         } else if (!/^0x[a-fA-F0-9]{40}$/g.test(form.tipWalletAddress)) {
             return toast.error("Invalid wallet address format. Please enter a valid Ethereum address.");
+        } else if (hasInvalidLinks()) {
+            return toast.error("Please fix the invalid social links before submitting");
         }
 
         const loading = toast.loading("Updating profile...");
@@ -344,11 +368,18 @@ const EditProfile = () => {
                                     {socialIcons[platform]}
                                     <input
                                         type="url"
-                                        placeholder="https://"
+                                        placeholder={`https://${platform}.com/...`}
                                         value={form.socialLinks[platform]}
                                         onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
-                                        className="w-full p-2 pl-10 border rounded input-box"
+                                        className={`w-full p-2 pl-10 border rounded input-box ${
+                                            linkErrors[platform] ? 'bg-red-100 border-red-300' : ''
+                                        }`}
                                     />
+                                    {linkErrors[platform] && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            Please enter a valid URL (https://example.com)
+                                        </p>
+                                    )}
                                 </div>
                             ))}
                         </div>
