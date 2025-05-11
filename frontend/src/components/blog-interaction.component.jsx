@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Heart, MessageSquare, TwitterIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import {
   likePost,
   isPostLikedByUser,
@@ -130,7 +130,6 @@ const BlogInteraction = () => {
 
   return (
     <>
-      <ToastContainer position="bottom-right" />
       <hr className="border-grey my-3" />
       <div className="flex gap-6 justify-between">
         <div className="flex gap-3 items-center">

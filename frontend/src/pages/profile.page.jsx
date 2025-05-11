@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { useParams, Link } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import { Check, Copy, Loader, MessageSquare, Calendar, Youtube, Instagram, Github, Facebook, Twitter, Wallet, LinkIcon, BadgeDollarSign } from "lucide-react";
@@ -337,7 +337,6 @@ const ProfilePage = () => {
           </InPageNavigation>
         </div>
       </section>
-      <ToastContainer position="bottom-right" />
     </AnimationWrapper>
   );
 };

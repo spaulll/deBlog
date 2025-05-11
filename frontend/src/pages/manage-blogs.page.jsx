@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
 import { Search } from 'lucide-react';
 import InPageNavigation from "../components/inpage-navigation.component";
 import Loader from "../components/loader.component";
@@ -86,7 +85,6 @@ const ManageBlogs = () => {
                 Welcome @{userName}
             </h1>
 
-            <ToastContainer position="bottom-right" />
             <div className="relative max-md:mt-5 md:mt-8 mb-10">
                 <input
                     type="search"

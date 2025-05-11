@@ -5,7 +5,7 @@ import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
 import getImgURL from "../common/uploadToIPFS";
 import { useContext, useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { EditoContext } from "../pages/editor.pages";
 import EditorJS from "@editorjs/editorjs";
 import { tools } from "./tools.component";
@@ -122,7 +122,6 @@ const BlogEditor = () => {
           </button>
         </div>
       </nav>
-      <ToastContainer position="bottom-right" />
       <AnimationWrapper>
         <section>
           <div className="mx-auto max-w-[900px] w-full">

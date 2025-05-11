@@ -10,7 +10,6 @@ import BlogPostCard from "../components/blog-post.component";
 import BlogContent from "../components/blog-content.component";
 import CommentsContainer, { fetchComments } from "../components/comments.component";
 import moment from "moment";
-
 export const blogStructure = {
   title: "",
   des: "",

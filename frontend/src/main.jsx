@@ -5,13 +5,17 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThirdwebProvider } from "thirdweb/react";
+import ToastWrapper from "./components/ToastWrapper";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   //<React.StrictMode>
   <ThirdwebProvider>
     <AuthProvider>
       <BrowserRouter>
-        <App />
+        <>
+          <App />
+          <ToastWrapper />
+        </>
       </BrowserRouter>
     </AuthProvider>
   </ThirdwebProvider>
