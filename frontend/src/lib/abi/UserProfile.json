@@ -1,0 +1,391 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldBlogContract",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newBlogContract",
+        "type": "address"
+      }
+    ],
+    "name": "BlogContractUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "userAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "username",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "bio",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "avatarUri",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string[]",
+        "name": "socialLinks",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isEdited",
+        "type": "bool"
+      }
+    ],
+    "name": "UserProfileCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "userAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "username",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "bio",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "avatarUri",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "tipWalletAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string[]",
+        "name": "socialLinks",
+        "type": "string[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isEdited",
+        "type": "bool"
+      }
+    ],
+    "name": "UserProfileEdited",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "blogContractAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_username",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_bio",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_avatarUri",
+        "type": "string"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_socialLinks",
+        "type": "string[]"
+      }
+    ],
+    "name": "createUser",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_username",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_bio",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_avatarUri",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_tipWalletAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_socialLinks",
+        "type": "string[]"
+      }
+    ],
+    "name": "editProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getUserProfile",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "userAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "tipWalletAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "username",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "bio",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "avatarUri",
+            "type": "string"
+          },
+          {
+            "internalType": "uint32",
+            "name": "postCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "memberSince",
+            "type": "uint32"
+          },
+          {
+            "internalType": "string[]",
+            "name": "socialLinks",
+            "type": "string[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isEdited",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct UserProfile.User",
+        "name": "user",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getUserTipWallet",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "tipWalletAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isRegistered",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_blogContractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "updateBlogContractAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_postCount",
+        "type": "uint32"
+      }
+    ],
+    "name": "updatePostCount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "usernameExists",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "usernameToAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
