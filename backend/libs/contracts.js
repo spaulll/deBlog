@@ -5,17 +5,11 @@ import { monadTestnet } from "thirdweb/chains";
 import { thirdwebClient } from "../thirdwebClient.js";
 import { readFileSync } from 'fs';
 
-// import userProfileAbi from "./abi/UserProfileAbi.json" assert { type: "json" };
-// import blogAbi from "./abi/BlogAbi.json" assert { type: "json" };
+const chain = monadTestnet;
 
-const userProfileAbi = JSON.parse(
-    readFileSync(new URL('./abi/UserProfileAbi.json', import.meta.url))
-  );
-const blogAbi = JSON.parse(
-    readFileSync(new URL('./abi/BlogAbi.json', import.meta.url))
-  );
-
-// console.log("client", thirdwebClient.clientId);
+const userProfileAbi = JSON.parse(readFileSync(new URL('./abi/UserProfile.json', import.meta.url)));
+const blogAbi = JSON.parse(readFileSync(new URL('./abi/Blog.json', import.meta.url)));
+const addresses = JSON.parse(readFileSync(new URL('./abi/addresses.json', import.meta.url)))
 
 const client = thirdwebClient
 // Contract object for UserProfile
@@ -23,9 +17,9 @@ const UserProfileContract = getContract({
     // the thirdwebClient you have created via `createThirdwebthirdwebClient()`
     client,
     // the chain the contract is deployed on
-    chain: monadTestnet,
+    chain: chain,
     // the contract's address
-    address: "0xbD37B8998B7aC367D087964eD15Ee74266D7E571",
+    address: addresses.UserProfile,
     // OPTIONAL: the contract's abi
     abi: userProfileAbi
 });
@@ -35,9 +29,9 @@ const BlogContract = getContract({
     // the thirdwebClient you have created via `createThirdwebthirdwebClient()`
     client,
     // the chain the contract is deployed on
-    chain: monadTestnet,
+    chain: chain,
     // the contract's address
-    address: "0x4A005929B01c248ED43C7436214B45a1F8f04eb3",
+    address: addresses.Blog,
     // OPTIONAL: the contract's abi
     abi: blogAbi
 });

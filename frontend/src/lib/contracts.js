@@ -1,10 +1,14 @@
 import { getContract } from "thirdweb";
-// import { baseSepolia } from "thirdweb/chains";
 import { client } from "./client";
-import userProfileAbi from "./abi/UserProfileAbi.json";
-import blogAbi from "./abi/BlogAbi.json";
-import tipAbi from "./abi/TipAbi.json";
+import userProfileAbi from "./abi/UserProfile.json";
+import blogAbi from "./abi/Blog.json";
+import tipAbi from "./abi/Tipping.json";
+import addresses from "./abi/addresses.json"
 import { chain } from "./chain";
+
+const BlogContractAddress = addresses.Blog;
+const UserProfileContractAddress = addresses.UserProfile;
+const TippingContractAddress = addresses.Tipping;
 
 // Contract object for UserProfile
 const UserProfileContract = getContract({
@@ -13,7 +17,7 @@ const UserProfileContract = getContract({
     // the chain the contract is deployed on
     chain: chain,
     // the contract's address
-    address: "0xbD37B8998B7aC367D087964eD15Ee74266D7E571",
+    address: UserProfileContractAddress,
     // OPTIONAL: the contract's abi
     abi: userProfileAbi
 });
@@ -25,7 +29,7 @@ const BlogContract = getContract({
     // the chain the contract is deployed on
     chain: chain,
     // the contract's address
-    address: "0x4A005929B01c248ED43C7436214B45a1F8f04eb3",
+    address: BlogContractAddress,
     // OPTIONAL: the contract's abi
     abi: blogAbi
 });
@@ -37,7 +41,7 @@ const TippingContract = getContract({
     // the chain the contract is deployed on
     chain: chain,
     // the contract's address
-    address: "0xF1BDC5ede89DF2a6c28dA1f930F3DBA02BA06975",
+    address: TippingContractAddress,
     // OPTIONAL: the contract's abi
     abi: tipAbi
 }) 
