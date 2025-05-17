@@ -1,6 +1,7 @@
 // blog editor
 import { Link, useNavigate, useParams } from "react-router-dom";
 import logo from "../imgs/logo.webp";
+import { ArrowLeft } from "lucide-react";
 import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
 import getImgURL from "../common/uploadToIPFS";
@@ -110,10 +111,11 @@ const BlogEditor = () => {
   return (
     <>
       <nav className="navbar">
-        <Link to="/" className="flex-none w-10 ">
-          <img src={logo} />
+        <Link to="/" className="flex-none w-11 md:w-16">
+          <ArrowLeft className="hidden lg:block text-black absolute left-8 top-8" />
+          <img src={logo} className="w-full rounded-2xl" alt="Logo"/>
         </Link>
-        <p className="max-md:hidden text-black line-clamp-3 w-full">
+        <p className="max-md:hidden text-black text-xl line-clamp-3 w-full">
           {title.length ? title : "New Blog"}
         </p>
         <div className="flex gap-2 ml-auto">
