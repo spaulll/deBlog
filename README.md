@@ -63,12 +63,19 @@ A **Web3-native blogging platform** leveraging decentralized technologies for a 
 
 ---
 
+## 👥 Contributors
+
+- 👤 [spaulll](https://github.com/spaulll/)
+- 👤 [supriyopurkait](https://github.com/supriyopurkait/)
+- 👤 [subhasishmondalwork](https://github.com/subhasishmondalwork/)
+- 👤 [Sam8833](https://github.com/Sam8833/)
+
 ## 🤝 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to contribute.
 
-<!-- ## 📜 License
-MIT License. See `LICENSE` for details. -->
+## 📜 License
+MIT License. See `LICENSE` for details.
 
 ---
 
