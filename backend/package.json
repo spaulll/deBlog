@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "nodemon server.js"
+        "dev": "nodemon server.js",
+        "start": "pm2 start server.js --no-daemon -f"
     },
     "dependencies": {
         "@thirdweb-dev/storage": "^2.0.15",
@@ -17,7 +18,7 @@
         "thirdweb": "^5.95.1"
     },
     "devDependencies": {
-        "multer": "^1.4.5-lts.1",
+        "multer": "^2.0.0",
         "nodemon": "^3.0.0"
     }
 }
