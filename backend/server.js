@@ -13,7 +13,7 @@ import { searchUserProfiles } from "./libs/graph-ops/userProfile.js";
 // GraphQL imports
 import { getLatestBlogs, invalidateBlogsCache, getCacheStats } from "./libs/graph-ops/latestBlogs.js";
 import { getTrendingBlogs } from "./libs/graph-ops/trendingBlogs.js";
-import { getBlogsOfAuthor, clearAuthorCache, getCacheStats as authorCacheStats  } from "./libs/graph-ops/blogsByAuthor.js";
+import { getBlogsOfAuthor, clearAuthorCache, getCacheStats as authorCacheStats } from "./libs/graph-ops/blogsByAuthor.js";
 import { getBlogsByKeywords, clearSearchCache, getCacheStats as searchCacheStats } from "./libs/graph-ops/blogsByKeyword.js";
 import { getUserProfile } from "./libs/contractInteraction.js";
 import { getComments } from "./libs/graph-ops/comments.js";
@@ -259,7 +259,7 @@ app.post("/create-blog", async (req, res) => {
             message: "Blog is ready to be published.",
             blogUrl,
             blogIdHash,
-            blogJSON                
+            blogJSON
         });
 
     } catch (err) {
@@ -274,7 +274,7 @@ app.post("/api/invalidate-blog-cache", async (req, res) => {
         console.log("No JWT found in cookies");
         return res.status(401).json({ success: 0, message: "Unauthorized" });
     }
-    const authResult = await thirdwebAuth.verifyJWT({ jwt });   
+    const authResult = await thirdwebAuth.verifyJWT({ jwt });
     if (!authResult.valid) {
         console.log("Invalid JWT");
         return res.status(401).json({ success: 0, message: "Unauthorized" });
@@ -287,7 +287,7 @@ app.post("/api/invalidate-blog-cache", async (req, res) => {
             author: clearAuthorCache()
         };
     }
-    
+
     return res.status(200).json({
         success: 1,
         message: "Cache invalidated successfully. Next fetch will use fresh data including IPFS content.",
@@ -297,7 +297,7 @@ app.post("/api/invalidate-blog-cache", async (req, res) => {
 
 app.get("/latest-blogs", async (req, res) => {
     try {
- 
+
         const blogs = await getLatestBlogs();
         console.log("Latest Blogs:", blogs);
         if (!blogs) {
@@ -413,27 +413,37 @@ app.get("/api/search-users", async (req, res) => {
         return res.status(400).json({ success: 0, message: "Query is required" });
     }
     if (query.length === 42 && query.startsWith("0x")) {
-        const data = await searchUserProfiles({ address: query });
-        if (!data) {
-            return res.status(500).json({ success: 0, message: "Internal Server Error." });
+        try {
+            const data = await searchUserProfiles({ address: query });
+            if (!data) {
+                return res.status(500).json({ success: 0, message: "Internal Server Error." });
+            }
+            console.log("User:", data);
+            return res.status(200).json({
+                success: 1,
+                message: "User fetched successfully.",
+                results: data
+            });
+        } catch (error) {
+            console.error("Error searching user by address:", error);
+            return res.status(500).json({ success: 0, message: "No user found." });
         }
-        console.log("User:", data);
-        return res.status(200).json({
-            success: 1,
-            message: "User fetched successfully.",
-            results: data
-        });
     } else {
-        const data = await searchUserProfiles({ username: query });
-        if (!data) {
-            return res.status(500).json({ success: 0, message: "Internal Server Error." });
+        try {
+            const data = await searchUserProfiles({ username: query });
+            if (!data) {
+                return res.status(500).json({ success: 0, message: "Internal Server Error." });
+            }
+            console.log("Users:", data);
+            return res.status(200).json({
+                success: 1,
+                message: "Users fetched successfully.",
+                results: data
+            });
+        } catch (error) {
+            console.error("Error searching users by username:", error);
+            return res.status(500).json({ success: 0, message: "No user found." });
         }
-        console.log("Users:", data);
-        return res.status(200).json({
-            success: 1,
-            message: "Users fetched successfully.",
-            results: data
-        });
     }
 });
 app.get("/api/get-comments", async (req, res) => {
