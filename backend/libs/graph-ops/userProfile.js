@@ -97,7 +97,13 @@ const searchUserProfiles = async ({ address, username }) => {
             ...editedProfiles.map(p => p.userAddress.toLowerCase())
         ]);
         
-        // 4. For all addresses found, get their complete profile history
+        // 4. Early return if no addresses found - this prevents the empty array query
+        if (uniqueAddresses.size === 0) {
+            console.log('No profiles found matching the search criteria');
+            return [];
+        }
+        
+        // 5. For all addresses found, get their complete profile history
         const fullProfileHistoryQuery = gql`
             query {
                 createdProfiles: userProfileCreateds(
@@ -132,7 +138,7 @@ const searchUserProfiles = async ({ address, username }) => {
         const allCreatedProfiles = fullHistoryData.createdProfiles || [];
         const allEditedProfiles = fullHistoryData.editedProfiles || [];
         
-        // 5. Get the most recent profile (created or edited) for each address
+        // 6. Get the most recent profile (created or edited) for each address
         const finalProfilesMap = new Map();
         
         // First add all created profiles
@@ -151,7 +157,7 @@ const searchUserProfiles = async ({ address, username }) => {
             }
         }
         
-        // 6. Format and return the final profiles
+        // 7. Format and return the final profiles
         const finalProfiles = Array.from(finalProfilesMap.values());
         return formatProfiles(finalProfiles);
     } catch (error) {
